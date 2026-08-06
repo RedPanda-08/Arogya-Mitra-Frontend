@@ -8,6 +8,19 @@ import logo from './am-logo.jpeg';
 type TabId = "home" | "about" | "contact";
 
 // ---------------------------------------------------------------------------
+// High-Quality Curated Image Assets
+// ---------------------------------------------------------------------------
+const IMAGES = {
+  heroBanner: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80", 
+  patientApp: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80",  
+  centralAi: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80",   
+  hospitalHms: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80", 
+  emergencySos: "https://images.unsplash.com/photo-1587745416684-47953f16f02f?auto=format&fit=crop&w=800&q=80",
+  doctorCare: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=800&q=80",  
+  abdmRecord: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80",  
+};
+
+// ---------------------------------------------------------------------------
 // Toast Hook & Component
 // ---------------------------------------------------------------------------
 function useToast() {
@@ -40,7 +53,7 @@ const Toast: React.FC<{ message: string | null }> = ({ message }) => (
 );
 
 // ---------------------------------------------------------------------------
-// Shared Icons (Exact SVG Paths)
+// Shared Icons
 // ---------------------------------------------------------------------------
 const iconProps = { fill: "none", stroke: "currentColor", strokeWidth: 1.8 } as const;
 
@@ -97,7 +110,7 @@ const PhoneIcon: React.FC<{ className?: string }> = ({ className }) => (
 );
 
 const BrandMark: React.FC = () => (
-  <div className="w-9 h-9 rounded-xl bg-teal-700 flex items-center justify-center text-white shadow-md overflow-hidden">
+  <div className="w-9 h-9 rounded-xl bg-emerald-700 flex items-center justify-center text-white shadow-md overflow-hidden">
     <img 
       src={logo} 
       alt="Arogya Mitra Logo" 
@@ -107,7 +120,7 @@ const BrandMark: React.FC = () => (
 );
 
 // ---------------------------------------------------------------------------
-// Professional Scroll & Mount Animation Wrapper
+// Hardware-Accelerated Animation Wrapper
 // ---------------------------------------------------------------------------
 const Reveal: React.FC<{ 
   children: React.ReactNode; 
@@ -126,7 +139,7 @@ const Reveal: React.FC<{
           observer.unobserve(entry.target);
         }
       },
-      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
+      { threshold: 0.15 }
     );
 
     if (ref.current) observer.observe(ref.current);
@@ -142,7 +155,7 @@ const Reveal: React.FC<{
   return (
     <div
       ref={ref}
-      className={`transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+      className={`transform-gpu transition-opacity transition-transform duration-500 ease-out ${
         isVisible ? "opacity-100 translate-y-0 translate-x-0" : `opacity-0 ${transformClass}`
       } ${className}`}
       style={{ transitionDelay: `${delay}ms` }}
@@ -157,9 +170,9 @@ const Reveal: React.FC<{
 // ---------------------------------------------------------------------------
 const Eyebrow: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = "" }) => (
   <div
-    className={`inline-flex items-center gap-2 rounded-full bg-teal-50 border border-teal-100 px-3 py-1.5 font-sans text-xs font-bold uppercase tracking-widest text-teal-700 ${className}`}
+    className={`inline-flex items-center gap-2 rounded-full bg-emerald-100/80 border border-emerald-300/60 px-3.5 py-1.5 font-sans text-xs font-bold uppercase tracking-widest text-emerald-900 shadow-xs ${className}`}
   >
-    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-teal-500" />
+    <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-600" />
     {children}
   </div>
 );
@@ -170,13 +183,13 @@ const Button: React.FC<
   React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant; block?: boolean }
 > = ({ variant = "primary", block, className = "", children, ...rest }) => {
   const variants: Record<ButtonVariant, string> = {
-    primary: "bg-teal-700 text-white hover:bg-teal-800 shadow-sm focus:ring-teal-600",
+    primary: "bg-emerald-700 text-white hover:bg-emerald-800 shadow-sm focus:ring-emerald-600",
     accent: "bg-[#001f3f] text-white hover:bg-[#00152e] shadow-sm focus:ring-[#001f3f]",
-    ghost: "bg-transparent text-teal-700 hover:bg-teal-50 border border-transparent",
+    ghost: "bg-transparent text-emerald-900 hover:bg-emerald-100/60 border border-transparent",
   };
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-95 cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 ${
+      className={`inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold transition-transform focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-95 cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 ${
         variants[variant]
       } ${block ? "w-full" : ""} ${className}`}
       {...rest}
@@ -207,7 +220,7 @@ const Field: React.FC<{
         required={required}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="min-h-[100px] w-full resize-y pl-4 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all"
+        className="min-h-[100px] w-full resize-y pl-4 pr-4 py-2.5 bg-slate-50/80 border border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-colors"
       />
     ) : (
       <input
@@ -217,7 +230,7 @@ const Field: React.FC<{
         required={required}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full pl-4 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all"
+        className="w-full pl-4 pr-4 py-2.5 bg-slate-50/80 border border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-colors"
       />
     )}
   </div>
@@ -234,11 +247,11 @@ const NAV_LINKS: { id: TabId; label: string }[] = [
 
 const Header: React.FC<{ onNavigate: (t: string) => void }> = ({ onNavigate }) => {
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-sm">
+    <header className="sticky top-0 z-50 bg-[#f0f4f2]/95 backdrop-blur-md border-b border-slate-200/60 shadow-2xs">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <button onClick={() => onNavigate("home")} className="flex items-center gap-3 text-xl font-bold text-[#001f3f] tracking-tight hover:opacity-80 transition-opacity cursor-pointer">
           <BrandMark />
-          AROGYA VITRA
+          AROGYA MITRA
         </button>
 
         <nav className="hidden md:flex items-center gap-2">
@@ -246,7 +259,7 @@ const Header: React.FC<{ onNavigate: (t: string) => void }> = ({ onNavigate }) =
             <button
               key={link.id}
               onClick={() => onNavigate(link.id)}
-              className="rounded-lg px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-teal-700 transition-colors cursor-pointer"
+              className="rounded-lg px-4 py-2 text-sm font-bold text-slate-700 hover:bg-emerald-100/50 hover:text-emerald-900 transition-colors cursor-pointer"
             >
               {link.label}
             </button>
@@ -256,7 +269,7 @@ const Header: React.FC<{ onNavigate: (t: string) => void }> = ({ onNavigate }) =
         <div className="flex items-center gap-3">
           <button 
             onClick={() => onNavigate("login")}
-            className="hidden sm:block text-sm font-bold text-slate-500 hover:text-teal-700 transition-colors px-3 cursor-pointer"
+            className="hidden sm:block text-sm font-bold text-slate-700 hover:text-emerald-900 transition-colors px-3 cursor-pointer"
           >
             Sign in
           </button>
@@ -270,18 +283,18 @@ const Header: React.FC<{ onNavigate: (t: string) => void }> = ({ onNavigate }) =
 };
 
 // ---------------------------------------------------------------------------
-// Home Section
+// Home Section (Harmonized Off-White Canvas)
 // ---------------------------------------------------------------------------
 const LAYERS = [
-  { idx: "01", title: "Av Care", desc: "Patient app, every Indian language", Icon: HeartIcon, tone: "teal" as const },
-  { idx: "02", title: "Central Intelligence", desc: "The engine linking every layer", Icon: NetworkIcon, tone: "blue" as const },
-  { idx: "03", title: "Hospital System", desc: "HMS + doctor tools + analytics", Icon: HospitalIcon, tone: "navy" as const },
+  { idx: "01", title: "Av Care", desc: "Patient app, every Indian language", Icon: HeartIcon, tone: "emerald" as const, img: IMAGES.patientApp },
+  { idx: "02", title: "Central Intelligence", desc: "The engine linking every layer", Icon: NetworkIcon, tone: "sage" as const, img: IMAGES.centralAi },
+  { idx: "03", title: "Hospital System", desc: "HMS + doctor tools + analytics", Icon: HospitalIcon, tone: "navy" as const, img: IMAGES.hospitalHms },
 ];
 
 const layerTone: Record<string, string> = {
-  teal: "bg-teal-50 text-teal-700",
-  blue: "bg-blue-50 text-blue-600",
-  navy: "bg-indigo-50 text-indigo-700",
+  emerald: "bg-emerald-100/80 text-emerald-800 border border-emerald-200",
+  sage: "bg-teal-100/80 text-teal-800 border border-teal-200",
+  navy: "bg-slate-200/80 text-slate-800 border border-slate-300",
 };
 
 const FEATURES = [
@@ -289,50 +302,63 @@ const FEATURES = [
     Icon: HospitalIcon,
     title: "Doctor Care auto-reassignment",
     desc: "If a doctor cancels, the system reassigns your slot automatically — no chasing the front desk.",
+    img: IMAGES.doctorCare,
   },
   {
     Icon: SirenIcon,
     title: "108 Emergency SOS",
     desc: "One tap alerts the nearest hospital and your family in real time, before the ambulance even arrives.",
+    img: IMAGES.emergencySos,
   },
   {
     Icon: NetworkIcon,
     title: "AI analytics for hospitals",
     desc: "Hospitals see patient load, outcomes and resourcing patterns as they happen, not at month end.",
+    img: IMAGES.centralAi,
   },
   {
     Icon: CheckCircleIcon,
     title: "ABDM / ABHA integration",
     desc: "Your health records follow the national digital health ID — no paperwork to carry between visits.",
+    img: IMAGES.abdmRecord,
   },
 ];
 
 const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => (
   <>
-    <div className="relative overflow-hidden">
-      <div className="absolute top-0 inset-x-0 h-[600px] bg-gradient-to-b from-emerald-50/80 to-transparent pointer-events-none z-0"></div>
-      <div className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-teal-100/40 rounded-full blur-[100px] pointer-events-none z-0"></div>
+    {/* Hero Section */}
+    <div className="relative overflow-hidden py-16 md:py-24">
+      {/* Background Hero Texture */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <img 
+          src={IMAGES.heroBanner} 
+          alt="Arogya Mitra Background" 
+          className="h-full w-full object-cover opacity-35 transform-gpu object-center"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#f0f4f2] via-[#f0f4f2]/90 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#f0f4f2]/30 via-transparent to-[#f0f4f2]" />
+      </div>
 
-      <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-1 items-center gap-14 px-6 pb-16 pt-16 md:grid-cols-[1.1fr_0.9fr] md:pt-24">
+      <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-1 items-center gap-14 px-6 md:grid-cols-[1.1fr_0.9fr]">
         <div>
-          <Reveal delay={100}>
+          <Reveal delay={50}>
             <Eyebrow className="mb-5">Built for Indian healthcare</Eyebrow>
           </Reveal>
           
-          <Reveal delay={200}>
+          <Reveal delay={100}>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight text-[#001f3f]">
-              One platform for every <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-teal-400">layer of care</span>, from home to hospital.
+              One platform for every <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-700">layer of care</span>, from home to hospital.
             </h1>
           </Reveal>
           
-          <Reveal delay={300}>
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-slate-500">
+          <Reveal delay={150}>
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-slate-700 font-medium">
               Arogya Mitra connects patients, doctors and hospitals on a single intelligent system — with real-time
               emergency response, AI-guided diagnostics and support in every Indian language.
             </p>
           </Reveal>
           
-          <Reveal delay={400}>
+          <Reveal delay={200}>
             <div className="mt-8 flex flex-wrap gap-4">
               <Button variant="primary" onClick={() => onNavigate("register")}>
                 Create Free Account
@@ -343,8 +369,8 @@ const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavig
             </div>
           </Reveal>
           
-          <Reveal delay={500}>
-            <div className="mt-12 flex gap-8 border-t border-slate-200 pt-8">
+          <Reveal delay={250}>
+            <div className="mt-12 flex gap-8 pt-8 border-t border-slate-300/60">
               {[
                 ["16", "Platform microservices"],
                 ["108", "Emergency SOS network"],
@@ -354,33 +380,41 @@ const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavig
                   <span className="text-2xl font-extrabold text-[#001f3f]">
                     {num}
                   </span>
-                  <span className="mt-1 text-xs font-semibold text-slate-500 uppercase tracking-wider">{label}</span>
+                  <span className="mt-1 text-xs font-semibold text-slate-600 uppercase tracking-wider">{label}</span>
                 </div>
               ))}
             </div>
           </Reveal>
         </div>
 
+        {/* Hero Architecture Cards */}
         <div className="relative flex flex-col gap-4">
           <div
-            className="absolute bottom-0 left-10 top-0 z-0 w-0.5"
+            className="absolute bottom-0 left-10 top-6 z-0 w-0.5"
             style={{
-              backgroundImage: "repeating-linear-gradient(to bottom, #e2e8f0 0 4px, transparent 4px 8px)",
+              backgroundImage: "repeating-linear-gradient(to bottom, #a7f3d0 0 4px, transparent 4px 8px)",
             }}
           />
           {LAYERS.map((layer, index) => {
-            const delays = [300, 400, 500];
+            const delays = [150, 200, 250];
             return (
               <Reveal key={layer.idx} delay={delays[index]} direction="left" className="h-full">
-                <div className="relative flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow h-full flex">
-                  <span className="font-mono text-xs font-bold text-slate-400">{layer.idx}</span>
-                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${layerTone[layer.tone]}`}>
-                    <layer.Icon className="h-6 w-6" />
+                <div className="relative flex items-center justify-between gap-4 rounded-2xl border border-slate-300/80 bg-white p-5 shadow-sm hover:border-emerald-400 hover:shadow-md transition-all h-full">
+                  <div className="flex items-center gap-4">
+                    <span className="font-mono text-xs font-bold text-emerald-800">{layer.idx}</span>
+                    <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${layerTone[layer.tone]}`}>
+                      <layer.Icon className="h-6 w-6" />
+                    </div>
+                    <div className="flex flex-col justify-center">
+                      <h4 className="text-base font-bold text-[#001f3f]">{layer.title}</h4>
+                      <p className="mt-0.5 text-sm font-medium text-slate-600">{layer.desc}</p>
+                    </div>
                   </div>
-                  <div className="flex flex-col justify-center">
-                    <h4 className="text-base font-bold text-[#001f3f]">{layer.title}</h4>
-                    <p className="mt-0.5 text-sm text-slate-500">{layer.desc}</p>
-                  </div>
+                  <img 
+                    src={layer.img} 
+                    alt={layer.title} 
+                    className="w-14 h-14 rounded-lg object-cover border border-slate-200 shrink-0 hidden sm:block" 
+                  />
                 </div>
               </Reveal>
             );
@@ -389,15 +423,16 @@ const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavig
       </div>
     </div>
 
-    <div className="bg-white border-y border-slate-200">
-      <div className="mx-auto max-w-6xl px-6 py-20">
+    {/* Key Features Section */}
+    <div className="py-20">
+      <div className="mx-auto max-w-6xl px-6">
         <Reveal>
           <div className="mx-auto mb-16 max-w-2xl text-center">
             <Eyebrow className="mx-auto mb-4">Why Arogya Mitra</Eyebrow>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#001f3f]">
               Care that doesn&rsquo;t drop the thread
             </h2>
-            <p className="mt-4 text-lg text-slate-500">
+            <p className="mt-4 text-lg font-medium text-slate-700">
               Every feature is built to close a gap most healthcare apps leave open — from a missed appointment to a
               delayed ambulance.
             </p>
@@ -405,11 +440,15 @@ const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavig
         </Reveal>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((f, index) => (
-            <Reveal key={f.title} delay={index * 100} className="h-full">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-6 hover:bg-white hover:shadow-lg transition-all duration-300 h-full flex flex-col">
-                <f.Icon className="mb-4 h-8 w-8 text-teal-600 shrink-0" />
+            <Reveal key={f.title} delay={index * 50} className="h-full">
+              <div className="rounded-2xl border border-slate-300/70 bg-white p-6 hover:border-emerald-400 hover:shadow-lg transition-all duration-300 h-full flex flex-col overflow-hidden">
+                <div className="h-32 -mx-6 -mt-6 mb-4 overflow-hidden relative border-b border-slate-100">
+                  <img src={f.img} alt={f.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
+                  <f.Icon className="absolute bottom-3 left-4 h-7 w-7 text-white drop-shadow-md" />
+                </div>
                 <h4 className="text-lg font-bold text-[#001f3f]">{f.title}</h4>
-                <p className="mt-2 text-sm leading-relaxed text-slate-500 mt-auto">{f.desc}</p>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600 font-medium mt-auto">{f.desc}</p>
               </div>
             </Reveal>
           ))}
@@ -417,16 +456,18 @@ const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavig
       </div>
     </div>
 
+    {/* Call-to-Action Section */}
     <div className="mx-auto max-w-6xl px-6 py-16">
       <Reveal>
-        <div className="flex flex-col items-center justify-between gap-8 rounded-3xl bg-[#001f3f] p-10 sm:p-14 text-center md:flex-row md:text-left shadow-2xl">
-          <div>
+        <div className="relative overflow-hidden flex flex-col items-center justify-between gap-8 rounded-3xl bg-[#001f3f] p-10 sm:p-14 text-center md:flex-row md:text-left shadow-2xl">
+          <div className="absolute -right-20 -top-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative z-10">
             <h3 className="max-w-md text-3xl font-extrabold text-white leading-tight">
               Your care team, records, and emergency line — in one place.
             </h3>
-            <p className="mt-3 text-teal-100 font-medium">Create a free account in under a minute.</p>
+            <p className="mt-3 text-emerald-200 font-medium">Create a free account in under a minute.</p>
           </div>
-          <Button variant="primary" className="bg-teal-500 hover:bg-teal-400 text-[#001f3f] px-8 py-4 text-base" onClick={() => onNavigate("register")}>
+          <Button variant="primary" className="relative z-10 bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 text-base shadow-lg" onClick={() => onNavigate("register")}>
             Create account →
           </Button>
         </div>
@@ -442,7 +483,8 @@ const LAYER_DETAILS = [
   {
     tag: "Layer 01 — Patient",
     title: "AV Care",
-    border: "border-t-teal-600",
+    border: "border-t-emerald-600",
+    img: IMAGES.patientApp,
     items: [
       "Mobile app for patients, in every Indian language",
       "Daily Check-In with streaks and family notifications",
@@ -453,7 +495,8 @@ const LAYER_DETAILS = [
   {
     tag: "Layer 02 — Intelligence",
     title: "Central Intelligence Platform",
-    border: "border-t-indigo-500",
+    border: "border-t-teal-600",
+    img: IMAGES.centralAi,
     items: [
       "Connects every app and hospital system in real time",
       "Arogya Score engine and OCR record ingestion",
@@ -464,7 +507,8 @@ const LAYER_DETAILS = [
   {
     tag: "Layer 03 — Hospital",
     title: "Hospital / Doctor System",
-    border: "border-t-blue-500",
+    border: "border-t-[#001f3f]",
+    img: IMAGES.hospitalHms,
     items: [
       "Arogya Mitra HMS for hospital administration",
       "Av Care Sub, the companion app for doctors",
@@ -498,13 +542,13 @@ const DIFFERENTIATORS = [
 ];
 
 const AboutSection: React.FC = () => (
-  <div className="mx-auto max-w-6xl px-6 pb-20 pt-16">
+  <div className="mx-auto max-w-6xl px-6 py-20">
     <Reveal>
       <Eyebrow className="mb-2">About Arogya Mitra</Eyebrow>
       <h1 className="mt-4 text-3xl sm:text-4xl font-extrabold text-[#001f3f]">
         A centralized system, built in three layers.
       </h1>
-      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-500">
+      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700 font-medium">
         Most healthcare apps solve one piece of the journey — booking, or records, or hospital admin. Arogya Mitra was
         built to hold all of it together, so a patient&rsquo;s history, a doctor&rsquo;s schedule and a
         hospital&rsquo;s operations stay in sync.
@@ -513,11 +557,15 @@ const AboutSection: React.FC = () => (
 
     <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
       {LAYER_DETAILS.map((layer, index) => (
-        <Reveal key={layer.title} delay={index * 150} className="h-full">
-          <div className={`rounded-2xl border border-slate-200 border-t-4 bg-white p-8 shadow-md ${layer.border} h-full flex flex-col`}>
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate-400">{layer.tag}</span>
+        <Reveal key={layer.title} delay={index * 100} className="h-full">
+          <div className={`rounded-2xl border border-slate-300/80 bg-white p-8 shadow-md ${layer.border} h-full flex flex-col overflow-hidden`}>
+            <div className="h-36 -mx-8 -mt-8 mb-6 overflow-hidden relative">
+              <img src={layer.img} alt={layer.title} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent" />
+            </div>
+            <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate-500">{layer.tag}</span>
             <h4 className="mt-3 text-xl font-bold text-[#001f3f]">{layer.title}</h4>
-            <ul className="mt-4 list-disc pl-5 text-sm leading-relaxed text-slate-500 space-y-2">
+            <ul className="mt-4 list-disc pl-5 text-sm leading-relaxed text-slate-600 font-medium space-y-2">
               {layer.items.map((item) => (
                 <li key={item}>{item}</li>
               ))}
@@ -537,12 +585,12 @@ const AboutSection: React.FC = () => (
     </Reveal>
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       {DIFFERENTIATORS.map((d, index) => (
-        <Reveal key={d.title} delay={index * 100} className="h-full">
-          <div className="flex gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm h-full flex">
-            <d.Icon className="h-8 w-8 shrink-0 text-teal-600" />
+        <Reveal key={d.title} delay={index * 50} className="h-full">
+          <div className="flex gap-4 rounded-2xl border border-slate-300/80 bg-white p-6 shadow-xs hover:border-emerald-300 h-full flex">
+            <d.Icon className="h-8 w-8 shrink-0 text-emerald-700" />
             <div>
               <h4 className="text-lg font-bold text-[#001f3f]">{d.title}</h4>
-              <p className="mt-2 text-sm leading-relaxed text-slate-500">{d.desc}</p>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600 font-medium">{d.desc}</p>
             </div>
           </div>
         </Reveal>
@@ -552,7 +600,7 @@ const AboutSection: React.FC = () => (
 );
 
 // ---------------------------------------------------------------------------
-// Contact Section
+// Contact Section (Kept strictly on port 8090 with id="contact")
 // ---------------------------------------------------------------------------
 const ContactSection: React.FC<{ showToast: (msg: string) => void }> = ({ showToast }) => {
   const [name, setName] = useState("");
@@ -598,35 +646,35 @@ const ContactSection: React.FC<{ showToast: (msg: string) => void }> = ({ showTo
   return (
     <div className="mx-auto grid max-w-6xl grid-cols-1 gap-16 px-6 py-20 md:grid-cols-2">
       <div>
-        <Reveal delay={100}>
+        <Reveal delay={50}>
           <Eyebrow className="mb-2">Get in touch</Eyebrow>
           <h1 className="mt-4 text-4xl font-extrabold text-[#001f3f]">Let&rsquo;s talk.</h1>
-          <p className="mt-4 text-lg leading-relaxed text-slate-500">
+          <p className="mt-4 text-lg leading-relaxed text-slate-700 font-medium">
             Questions about the platform, a hospital partnership, or something else — send a note and the team will
             get back to you.
           </p>
         </Reveal>
         
         <div className="mt-10 space-y-6">
-          <Reveal delay={200}>
+          <Reveal delay={100}>
             <div className="flex items-center gap-4 text-base font-semibold text-[#001f3f]">
-              <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-700">
+              <div className="w-10 h-10 rounded-full bg-emerald-100/80 border border-emerald-200 flex items-center justify-center text-emerald-900 shadow-2xs">
                 <MailIcon className="h-5 w-5" />
               </div>
               support@arogyavitra.in
             </div>
           </Reveal>
-          <Reveal delay={300}>
+          <Reveal delay={150}>
             <div className="flex items-center gap-4 text-base font-semibold text-[#001f3f]">
-              <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-700">
+              <div className="w-10 h-10 rounded-full bg-emerald-100/80 border border-emerald-200 flex items-center justify-center text-emerald-900 shadow-2xs">
                 <PinIcon className="h-5 w-5" />
               </div>
               Hyderabad, Telangana, India
             </div>
           </Reveal>
-          <Reveal delay={400}>
+          <Reveal delay={200}>
             <div className="flex items-center gap-4 text-base font-semibold text-[#001f3f]">
-              <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-700">
+              <div className="w-10 h-10 rounded-full bg-emerald-100/80 border border-emerald-200 flex items-center justify-center text-emerald-900 shadow-2xs">
                 <PhoneIcon className="h-5 w-5" />
               </div>
               +91 9874588327
@@ -635,8 +683,8 @@ const ContactSection: React.FC<{ showToast: (msg: string) => void }> = ({ showTo
         </div>
       </div>
 
-      <Reveal delay={200} direction="up">
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 sm:p-10 shadow-xl">
+      <Reveal delay={100} direction="up">
+        <div className="rounded-2xl border border-slate-300/80 bg-white p-8 sm:p-10 shadow-xl">
           <form onSubmit={handleSubmit}>
             <Field id="cName" label="Name" placeholder="Your name" value={name} onChange={setName} required />
             <Field id="cEmail" label="Email" type="email" placeholder="you@example.com" value={email} onChange={setEmail} required />
@@ -644,7 +692,7 @@ const ContactSection: React.FC<{ showToast: (msg: string) => void }> = ({ showTo
             <Button type="submit" variant="primary" block disabled={sending} className="mt-2">
               {sending ? "Sending..." : "Send message"}
             </Button>
-            <p className="mt-4 text-center text-sm font-medium text-slate-500">{note}</p>
+            <p className="mt-4 text-center text-sm font-medium text-slate-600">{note}</p>
           </form>
         </div>
       </Reveal>
@@ -656,20 +704,20 @@ const ContactSection: React.FC<{ showToast: (msg: string) => void }> = ({ showTo
 // Footer
 // ---------------------------------------------------------------------------
 const Footer: React.FC = () => (
-  <footer className="border-t border-slate-200 bg-slate-50 py-8 mt-auto">
-    <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 text-sm font-medium text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+  <footer className="py-12 mt-auto bg-[#e6ecea]/60 border-t border-slate-300/50">
+    <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 text-sm font-medium text-slate-600 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2">
         <BrandMark />
         <span className="font-bold text-[#001f3f] tracking-tight ml-1">AROGYA VITRA</span>
       </div>
       <span>© {new Date().getFullYear()} Arogya Vitra. Hyderabad, India.</span>
-      <span className="font-semibold text-slate-400">AV Care · Central Intelligence · Hospital System</span>
+      <span className="font-semibold text-slate-500">AV Care · Central Intelligence · Hospital System</span>
     </div>
   </footer>
 );
 
 // ---------------------------------------------------------------------------
-// App (Home Page Wrapper)
+// App Component
 // ---------------------------------------------------------------------------
 export default function Home() {
   const { message, showToast } = useToast();
@@ -689,7 +737,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased flex flex-col">
+    <div className="min-h-screen bg-[#f0f4f2] font-sans text-slate-800 antialiased flex flex-col">
       <Header onNavigate={handleNavigate} />
 
       <main className="flex-grow">
@@ -697,11 +745,11 @@ export default function Home() {
           <HomeSection onNavigate={handleNavigate} />
         </section>
         
-        <section id="about" className="scroll-mt-20 border-t border-slate-200">
+        <section id="about" className="scroll-mt-20">
           <AboutSection />
         </section>
         
-        <section id="contact" className="scroll-mt-20 border-t border-slate-200 bg-white">
+        <section id="contact" className="scroll-mt-20">
           <ContactSection showToast={showToast} />
         </section>
       </main>
