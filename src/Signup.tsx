@@ -134,7 +134,7 @@ export default function Signup() {
           </div>
           <p className="text-slate-500 mt-2 text-sm font-medium">
             {step === 'form' 
-              ? 'Set up your Arogya Mitra patient profile.' 
+              ? 'Set up your Arogya Vitra patient profile.' 
               : `We sent a verification code to ${email}`}
           </p>
         </div>

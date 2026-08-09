@@ -93,7 +93,7 @@ export default function Login() {
               />
             </div>
             <h1 className="text-2xl font-extrabold text-[#001f3f] tracking-tight">
-              AROGYA MITRA
+              AROGYA VITRA
             </h1>
           </div>
           <p className="text-slate-500 mt-2 text-sm font-medium">
