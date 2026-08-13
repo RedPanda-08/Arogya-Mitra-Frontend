@@ -184,7 +184,7 @@ export default function Login() {
               <span className="ml-2 text-sm text-slate-600 group-hover:text-[#001f3f] font-medium transition-colors">Remember me</span>
             </label>
             
-            <a href="#" className="text-sm font-bold text-teal-700 hover:text-teal-800 hover:underline transition-all cursor-pointer">
+            <a href="/forgot-password" className="text-sm font-bold text-teal-700 hover:text-teal-800 hover:underline transition-all cursor-pointer">
               Forgot password?
             </a>
           </div>
