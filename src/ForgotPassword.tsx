@@ -52,34 +52,42 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center font-sans text-slate-800 p-6 antialiased">
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center font-sans text-slate-800 p-6 antialiased relative overflow-hidden">
       
-      {/* Main Container */}
-      <div className="bg-white p-8 sm:p-10 rounded-2xl shadow-xl border border-slate-200 max-w-md w-full relative overflow-hidden">
-        
+      {/* 🌿 Smooth Light Green Floating Corner Gradients */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-300/70 via-emerald-100/20 to-transparent pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-emerald-200/50 via-transparent to-transparent pointer-events-none z-0" />
 
+      {/* Main Card Container */}
+      <div className="bg-white p-8 sm:p-12 rounded-3xl shadow-xl border border-slate-200/80 max-w-md w-full relative z-10">
+        
         {!isSent ? (
           <>
             {/* Form Header */}
-            <div className="mb-6 text-center sm:text-left">
-              <h1 className="text-2xl font-extrabold text-[#001f3f]">Forgot Password?</h1>
-              <p className="text-sm font-medium text-slate-600 mt-1.5 leading-relaxed">
+            <div className="mb-8 text-center sm:text-left">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#001f3f] tracking-tight">
+                Forgot Password?
+              </h1>
+              <p className="text-sm font-medium text-slate-500 mt-2.5 leading-relaxed">
                 No worries. Enter your registered email address and we'll send you a secure link to reset your password.
               </p>
             </div>
 
             {/* Error Notification */}
             {error && (
-              <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-semibold flex items-center gap-2">
-                <span className="text-base">⚠️</span>
+              <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-semibold flex items-center gap-3">
+                <span className="text-base flex-shrink-0">⚠️</span>
                 <span>{error}</span>
               </div>
             )}
 
             {/* Reset Request Form */}
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label htmlFor="email" className="block text-xs font-bold uppercase tracking-wider text-[#001f3f] mb-1.5">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2.5">
+                <label 
+                  htmlFor="email" 
+                  className="block text-xs font-bold uppercase tracking-wider text-[#001f3f]"
+                >
                   Email Address
                 </label>
                 <div className="relative">
@@ -93,43 +101,45 @@ export default function ForgotPassword() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent text-sm font-medium transition-all"
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent text-sm font-medium transition-all"
                   />
                 </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full py-3 bg-emerald-700 text-white font-bold rounded-lg hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 transition-all disabled:opacity-70 text-sm cursor-pointer shadow-xs active:scale-[0.99]"
-              >
-                {isLoading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Sending Link...
-                  </span>
-                ) : (
-                  'Send Reset Link'
-                )}
-              </button>
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-3.5 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 transition-all disabled:opacity-70 text-sm cursor-pointer shadow-sm active:scale-[0.99]"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center justify-center gap-2.5">
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Sending Link...
+                    </span>
+                  ) : (
+                    'Send Reset Link'
+                  )}
+                </button>
+              </div>
             </form>
           </>
         ) : (
           /* Confirmation Success State */
-          <div className="text-center py-4">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center mx-auto mb-4 shadow-2xs">
-              <CheckCircleIcon className="w-8 h-8" />
+          <div className="text-center py-6">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center mx-auto mb-6 shadow-xs">
+              <CheckCircleIcon className="w-9 h-9" />
             </div>
             <h2 className="text-2xl font-extrabold text-[#001f3f]">Check Your Email</h2>
-            <p className="text-sm text-slate-600 font-medium mt-2 leading-relaxed">
+            <p className="text-sm text-slate-600 font-medium mt-3 leading-relaxed">
               {message}
             </p>
-            <div className="mt-6 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-500 font-medium">
+            <div className="mt-8 p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl text-xs text-emerald-800 font-semibold leading-relaxed">
               Didn't receive the email? Check your spam folder or try again.
             </div>
             <button
               onClick={() => setIsSent(false)}
-              className="mt-4 text-xs font-bold text-emerald-800 hover:text-emerald-900 transition-colors cursor-pointer"
+              className="mt-6 text-xs font-bold text-emerald-800 hover:text-emerald-900 transition-colors cursor-pointer py-1.5 px-3 rounded-lg hover:bg-emerald-50"
             >
               Re-enter email address
             </button>
@@ -137,10 +147,10 @@ export default function ForgotPassword() {
         )}
 
         {/* Back to Login Footer */}
-        <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+        <div className="mt-10 pt-8 border-t border-slate-100 text-center">
           <Link 
             to="/login" 
-            className="inline-flex items-center gap-2 text-sm font-bold text-emerald-800 hover:text-emerald-900 transition-colors group"
+            className="inline-flex items-center gap-2.5 text-sm font-bold text-emerald-800 hover:text-emerald-900 transition-colors group"
           >
             <ArrowLeftIcon className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             Back to Login

@@ -49,7 +49,6 @@ const AlertTriangleIcon: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 );
 
-
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
@@ -107,25 +106,28 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 flex flex-col items-center justify-center font-sans text-slate-800 p-6 antialiased">
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center font-sans text-slate-800 p-6 antialiased relative overflow-hidden">
       
+      {/* 🌿 Smooth Light Green Floating Corner Gradients */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-300/70 via-emerald-100/20 to-transparent pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-emerald-200/50 via-transparent to-transparent pointer-events-none z-0" />
 
-      <div className="bg-white p-8 sm:p-10 rounded-2xl shadow-xl border border-slate-200/80 max-w-md w-full relative overflow-hidden">
+      {/* Main Card Container */}
+      <div className="bg-white p-8 sm:p-12 rounded-3xl shadow-xl border border-slate-200/80 max-w-md w-full relative z-10">
         
-
         {/* Invalid or Missing Token Warning */}
         {!token ? (
-          <div className="text-center py-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center mx-auto mb-4 shadow-2xs">
-              <AlertTriangleIcon className="w-6 h-6" />
+          <div className="text-center py-6">
+            <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center mx-auto mb-6 shadow-xs">
+              <AlertTriangleIcon className="w-8 h-8" />
             </div>
             <h1 className="text-2xl font-extrabold text-[#001f3f]">Invalid Reset Link</h1>
-            <p className="text-sm font-medium text-slate-600 mt-2 leading-relaxed">
+            <p className="text-sm font-medium text-slate-600 mt-2.5 leading-relaxed">
               This password reset link is missing a valid token or has expired. Please request a new reset link.
             </p>
             <Link
               to="/forgot-password"
-              className="mt-6 inline-block w-full py-3 bg-emerald-700 text-white font-bold rounded-lg hover:bg-emerald-800 transition-colors text-sm shadow-xs"
+              className="mt-8 inline-block w-full py-3.5 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-800 transition-colors text-sm shadow-sm"
             >
               Request New Link
             </Link>
@@ -133,28 +135,27 @@ export default function ResetPassword() {
         ) : !isSuccess ? (
           <>
             {/* Form Header */}
-            <div className="mb-6 text-center sm:text-left">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-800 mb-4 mx-auto sm:mx-0 shadow-2xs">
-                <LockIcon className="w-6 h-6" />
-              </div>
-              <h1 className="text-2xl font-extrabold text-[#001f3f]">Reset Your Password</h1>
-              <p className="text-sm font-medium text-slate-600 mt-1.5 leading-relaxed">
-                Please enter a new password for your account below.
+            <div className="mb-8 text-center sm:text-left">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#001f3f] tracking-tight">
+                Reset Your Password
+              </h1>
+              <p className="text-sm font-medium text-slate-500 mt-2.5 leading-relaxed">
+                Please enter a new secure password for your account below.
               </p>
             </div>
 
             {/* Error Notification */}
             {error && (
-              <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-semibold flex items-center gap-2">
-                <span className="text-base">⚠️</span>
+              <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-semibold flex items-center gap-3">
+                <span className="text-base flex-shrink-0">⚠️</span>
                 <span>{error}</span>
               </div>
             )}
 
-            {/* Password Reset Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="newPassword" className="block text-xs font-bold uppercase tracking-wider text-[#001f3f] mb-1.5">
+            {/* Password Reset Form with expanded space between fields */}
+            <form onSubmit={handleSubmit} className="space-y-7">
+              <div className="space-y-2.5">
+                <label htmlFor="newPassword" className="block text-xs font-bold uppercase tracking-wider text-[#001f3f]">
                   New Password
                 </label>
                 <div className="relative">
@@ -168,20 +169,20 @@ export default function ResetPassword() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Enter new password"
-                    className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent text-sm font-medium transition-all"
+                    className="w-full pl-11 pr-11 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent text-sm font-medium transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
                   >
                     {showPassword ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
                   </button>
                 </div>
               </div>
 
-              <div>
-                <label htmlFor="confirmPassword" className="block text-xs font-bold uppercase tracking-wider text-[#001f3f] mb-1.5">
+              <div className="space-y-2.5">
+                <label htmlFor="confirmPassword" className="block text-xs font-bold uppercase tracking-wider text-[#001f3f]">
                   Confirm New Password
                 </label>
                 <div className="relative">
@@ -195,44 +196,46 @@ export default function ResetPassword() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Re-enter new password"
-                    className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent text-sm font-medium transition-all"
+                    className="w-full pl-11 pr-11 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent text-sm font-medium transition-all"
                   />
                 </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full mt-2 py-3 bg-emerald-700 text-white font-bold rounded-lg hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 transition-all disabled:opacity-70 text-sm cursor-pointer shadow-xs active:scale-[0.99]"
-              >
-                {isLoading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Resetting Password...
-                  </span>
-                ) : (
-                  'Update Password'
-                )}
-              </button>
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-3.5 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 transition-all disabled:opacity-70 text-sm cursor-pointer shadow-sm active:scale-[0.99]"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center justify-center gap-2.5">
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Resetting Password...
+                    </span>
+                  ) : (
+                    'Update Password'
+                  )}
+                </button>
+              </div>
             </form>
           </>
         ) : (
           /* Confirmation Success State */
-          <div className="text-center py-4">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center mx-auto mb-4 shadow-2xs">
-              <CheckCircleIcon className="w-8 h-8" />
+          <div className="text-center py-6">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center mx-auto mb-6 shadow-xs">
+              <CheckCircleIcon className="w-9 h-9" />
             </div>
             <h2 className="text-2xl font-extrabold text-[#001f3f]">Password Reset Complete!</h2>
-            <p className="text-sm text-slate-600 font-medium mt-2 leading-relaxed">
+            <p className="text-sm text-slate-600 font-medium mt-3 leading-relaxed">
               {message}
             </p>
-            <div className="mt-6 p-3 bg-emerald-50/60 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-semibold flex items-center justify-center gap-2">
+            <div className="mt-8 p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl text-xs text-emerald-800 font-semibold flex items-center justify-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
               Redirecting to login page in 3 seconds...
             </div>
             <button
               onClick={() => navigate('/login')}
-              className="mt-5 w-full py-2.5 bg-emerald-700 text-white font-bold rounded-lg hover:bg-emerald-800 transition-colors text-sm cursor-pointer shadow-xs"
+              className="mt-6 w-full py-3.5 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-800 transition-colors text-sm cursor-pointer shadow-sm"
             >
               Go to Login Now
             </button>
@@ -240,10 +243,10 @@ export default function ResetPassword() {
         )}
 
         {/* Back to Login Footer */}
-        <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+        <div className="mt-10 pt-8 border-t border-slate-100 text-center">
           <Link 
             to="/login" 
-            className="inline-flex items-center gap-2 text-sm font-bold text-emerald-800 hover:text-emerald-900 transition-colors group"
+            className="inline-flex items-center gap-2.5 text-sm font-bold text-emerald-800 hover:text-emerald-900 transition-colors group"
           >
             <ArrowLeftIcon className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             Back to Login
