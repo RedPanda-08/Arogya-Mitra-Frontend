@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { apiClient } from './services/api';
+import { usePatientStore } from './store/usePatientStore';
 import logo from './am-logo.jpeg';
 
 export default function Login() {
@@ -18,6 +19,24 @@ export default function Login() {
 
   const navigate = useNavigate();
 
+  // ---------------------------------------------------------------------------
+  // Logout Success Toast Logic via sessionStorage
+  // ---------------------------------------------------------------------------
+  const [showLogoutToast, setShowLogoutToast] = useState<boolean>(() => {
+    return sessionStorage.getItem('arogya_logged_out') === 'true';
+  });
+
+  useEffect(() => {
+    if (showLogoutToast) {
+      sessionStorage.removeItem('arogya_logged_out');
+      
+      const timer = setTimeout(() => {
+        setShowLogoutToast(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showLogoutToast]);
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorMessage('');
@@ -31,15 +50,38 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      await apiClient.post('/api/auth/login', {
+      const response = await apiClient.post('/api/auth/login', {
         email: email,
         password: password
       }, {
         withCredentials: true 
       });
 
-      console.log("Login successful.");
-      navigate('/dashboard');
+      const res = response.data || {};
+      const token = res.accessToken || res.token;
+      const userId = res.authUserId || res.userId || res.id;
+
+      if (!token || !userId) {
+        throw new Error("Invalid response structure from auth service. Missing accessToken or authUserId.");
+      }
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('userId', String(userId));
+      apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+      if (res.refreshToken) {
+        localStorage.setItem('refreshToken', res.refreshToken);
+      }
+
+      let patientProfile = null;
+      try {
+        patientProfile = await usePatientStore.getState().fetchPatientByUserId(String(userId));
+      } catch (profileErr) {
+        console.warn("No patient profile found for authUserId, proceeding to onboarding:", profileErr);
+      }
+
+      const targetPath = patientProfile ? '/dashboard' : '/onboarding';
+      navigate(targetPath, { replace: true });
 
     } catch (error) {
       console.error("Login failed:", error);
@@ -48,7 +90,6 @@ export default function Login() {
         if (error.response) {
           const status = error.response.status;
           
-          // 🔥 Check status codes FIRST to enforce your user-friendly login message securely
           if (status === 400 || status === 401 || status === 403 || status === 404) {
             setErrorMessage("Invalid email or password. Please try again.");
           } else {
@@ -67,7 +108,7 @@ export default function Login() {
           setErrorMessage("Something went wrong. Please try again.");
         }
       } else {
-        setErrorMessage("An unexpected error occurred.");
+        setErrorMessage(error instanceof Error ? error.message : "An unexpected error occurred.");
       }
     } finally {
       setIsLoading(false);
@@ -77,12 +118,29 @@ export default function Login() {
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-slate-50 p-4 font-sans text-slate-800 overflow-hidden">
       
-      {/* Soft, non-glowing top accent gradient */}
+      {/* ----------------------------------------------------- */}
+      {/* Successfully Logged Out Toast (Sliding in from Left) */}
+      {/* ----------------------------------------------------- */}
+      {showLogoutToast && (
+        <div className="fixed top-8 right-8 z-[9999] animate-in slide-in-from-left-8 fade-in duration-300 pointer-events-none">
+          <div className="bg-white border border-emerald-200 shadow-2xl rounded-2xl p-4 flex items-center gap-4 min-w-[320px]">
+            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 shrink-0">
+              <svg fill="none" stroke="currentColor" strokeWidth="2.5" className="w-5 h-5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div>
+              <h4 className="font-bold text-slate-900 text-sm">Successfully Logged Out</h4>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">Your session was securely closed.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="absolute top-0 inset-x-0 h-64 bg-gradient-to-b from-teal-50/80 to-transparent pointer-events-none z-0"></div>
 
       <div className="w-full max-w-md bg-white p-8 sm:p-10 rounded-2xl shadow-xl border border-slate-200 relative z-10">
         
-        {/* Header & Logo (Non-clickable, no hover) */}
         <div className="flex flex-col items-center mb-8 text-center">
           <div className="flex flex-col items-center">
             <div className="w-16 h-16 rounded-xl bg-teal-700 mb-4 flex items-center justify-center text-white shadow-md overflow-hidden">
@@ -93,7 +151,7 @@ export default function Login() {
               />
             </div>
             <h1 className="text-2xl font-extrabold text-[#001f3f] tracking-tight">
-              AROGYA VITRA
+              AROGYA MITRA
             </h1>
           </div>
           <p className="text-slate-500 mt-2 text-sm font-medium">
@@ -101,18 +159,15 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Error Banner */}
         {errorMessage && (
           <div className="mb-6 p-3.5 rounded-lg bg-red-50 border border-red-200 flex items-center text-red-700 text-sm font-medium transition-all shadow-sm">
-            <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             {errorMessage}
           </div>
         )}
 
-        {/* Authentication Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           
-          {/* Email Input Group */}
           <div>
             <label htmlFor="email" className="block text-sm font-semibold text-[#001f3f] mb-1.5">
               Email Address
@@ -135,7 +190,6 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Password Input Group */}
           <div>
             <label htmlFor="password" className="block text-sm font-semibold text-[#001f3f] mb-1.5">
               Password
@@ -171,7 +225,6 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Remember Me & Forgot Password */}
           <div className="flex items-center justify-between mt-4">
             <label className="flex items-center cursor-pointer group">
               <input
@@ -184,12 +237,11 @@ export default function Login() {
               <span className="ml-2 text-sm text-slate-600 group-hover:text-[#001f3f] font-medium transition-colors">Remember me</span>
             </label>
             
-            <a href="/forgot-password" className="text-sm font-bold text-teal-700 hover:text-teal-800 hover:underline transition-all cursor-pointer">
+            <Link to="/forgot-password" className="text-sm font-bold text-teal-700 hover:text-teal-800 hover:underline transition-all cursor-pointer">
               Forgot password?
-            </a>
+            </Link>
           </div>
 
-          {/* Submit Action */}
           <div className="pt-2">
             <button 
               type="submit" 
@@ -203,7 +255,6 @@ export default function Login() {
           </div>
         </form>
 
-        {/* Footer Link */}
         <div className="mt-8 text-center text-sm font-medium text-slate-500">
           Don't have an account?{' '}
           <Link to="/signup" className="font-bold cursor-pointer text-teal-700 hover:text-teal-800 hover:underline transition-all">

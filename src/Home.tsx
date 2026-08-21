@@ -3,13 +3,10 @@ import { useNavigate } from "react-router-dom";
 import logo from './am-logo.jpeg';
 
 // ---------------------------------------------------------------------------
-// Types
+// Types & Image Assets (Live Unsplash CDN)
 // ---------------------------------------------------------------------------
 type TabId = "home" | "about" | "contact";
 
-// ---------------------------------------------------------------------------
-// High-Quality Curated Image Assets
-// ---------------------------------------------------------------------------
 const IMAGES = {
   heroBanner: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80", 
   patientApp: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80",  
@@ -18,6 +15,30 @@ const IMAGES = {
   emergencySos: "https://images.unsplash.com/photo-1587745416684-47953f16f02f?auto=format&fit=crop&w=800&q=80",
   doctorCare: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=800&q=80",  
   abdmRecord: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80",  
+};
+
+// ---------------------------------------------------------------------------
+// Safe Image Component (Prevents Broken Image Icons on Other Machines)
+// ---------------------------------------------------------------------------
+const SafeImage: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className = '' }) => {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError) {
+    return (
+      <div className={`bg-gradient-to-br from-emerald-800 via-teal-900 to-slate-900 flex items-center justify-center text-white/70 font-semibold text-xs text-center p-2 ${className}`}>
+        <span>{alt}</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={() => setHasError(true)}
+    />
+  );
 };
 
 // ---------------------------------------------------------------------------
@@ -53,7 +74,7 @@ const Toast: React.FC<{ message: string | null }> = ({ message }) => (
 );
 
 // ---------------------------------------------------------------------------
-// Shared Icons
+// Shared Icons & Logos
 // ---------------------------------------------------------------------------
 const iconProps = { fill: "none", stroke: "currentColor", strokeWidth: 1.8 } as const;
 
@@ -244,7 +265,7 @@ const Header: React.FC<{ onNavigate: (t: string) => void }> = ({ onNavigate }) =
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <button onClick={() => onNavigate("home")} className="flex items-center gap-3 text-xl font-bold text-[#001f3f] tracking-tight hover:opacity-80 transition-opacity cursor-pointer">
           <BrandMark />
-          AROGYA VITRA
+          AROGYA MITRA
         </button>
 
         <nav className="hidden md:flex items-center gap-2">
@@ -276,7 +297,7 @@ const Header: React.FC<{ onNavigate: (t: string) => void }> = ({ onNavigate }) =
 };
 
 // ---------------------------------------------------------------------------
-// Home Section (Unified Seamless Flow)
+// Home Section (Unified Flow with Safe Unsplash Images)
 // ---------------------------------------------------------------------------
 const LAYERS = [
   { idx: "01", title: "AV Care", desc: "Patient app, every Indian language", Icon: HeartIcon, tone: "emerald" as const, img: IMAGES.patientApp },
@@ -321,11 +342,11 @@ const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavig
   <>
     {/* Hero Section */}
     <div className="relative overflow-hidden pt-16 pb-20 md:pt-24 md:pb-28">
-      {/* High-Clarity Doctor Image Masked Cleanly for White Canvas */}
+      {/* Background Banner */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden transform-gpu">
-        <img 
+        <SafeImage 
           src={IMAGES.heroBanner} 
-          alt="Doctor using tablet" 
+          alt="Healthcare background" 
           className="h-full w-full object-cover object-center opacity-40 filter contrast-105 brightness-95"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-white via-white/70 to-transparent" />
@@ -403,7 +424,7 @@ const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavig
                       <p className="mt-0.5 text-sm font-semibold text-slate-700">{layer.desc}</p>
                     </div>
                   </div>
-                  <img 
+                  <SafeImage 
                     src={layer.img} 
                     alt={layer.title} 
                     className="w-14 h-14 rounded-lg object-cover border border-slate-200 shrink-0 hidden sm:block" 
@@ -433,7 +454,7 @@ const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavig
           {FEATURES.map((f) => (
             <div key={f.title} className="rounded-2xl border border-slate-200 bg-white p-6 hover:border-emerald-300 hover:shadow-md transition-all duration-200 h-full flex flex-col overflow-hidden">
               <div className="h-32 -mx-6 -mt-6 mb-4 overflow-hidden relative border-b border-slate-100">
-                <img src={f.img} alt={f.title} className="w-full h-full object-cover" />
+                <SafeImage src={f.img} alt={f.title} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-transparent" />
                 <f.Icon className="absolute bottom-3 left-4 h-7 w-7 text-white drop-shadow-md" />
               </div>
@@ -546,7 +567,7 @@ const AboutSection: React.FC = () => (
       {LAYER_DETAILS.map((layer) => (
         <div key={layer.title} className={`rounded-2xl border border-slate-200 bg-white p-8 shadow-sm ${layer.border} h-full flex flex-col overflow-hidden`}>
           <div className="h-36 -mx-8 -mt-8 mb-6 overflow-hidden relative border-b border-slate-100">
-            <img src={layer.img} alt={layer.title} className="w-full h-full object-cover" />
+            <SafeImage src={layer.img} alt={layer.title} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-white via-white/10 to-transparent" />
           </div>
           <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate-500">{layer.tag}</span>
@@ -680,9 +701,9 @@ const Footer: React.FC = () => (
     <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 text-sm font-medium text-slate-600 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2">
         <BrandMark />
-        <span className="font-bold text-[#001f3f] tracking-tight ml-1">AROGYA VITRA</span>
+        <span className="font-bold text-[#001f3f] tracking-tight ml-1">AROGYA MITRA</span>
       </div>
-      <span>© {new Date().getFullYear()} Arogya Vitra. Hyderabad, India.</span>
+      <span>© {new Date().getFullYear()} Arogya Mitra. Hyderabad, India.</span>
       <span className="font-semibold text-slate-500">AV Care · Central Intelligence · Hospital System</span>
     </div>
   </footer>

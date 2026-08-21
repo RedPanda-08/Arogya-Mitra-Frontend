@@ -205,7 +205,7 @@ export default function ResetPassword() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3.5 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 transition-all disabled:opacity-70 text-sm cursor-pointer shadow-sm active:scale-[0.99]"
+                  className="w-full py-3.5 bg-teal-700 text-white font-bold rounded-xl hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 transition-all disabled:opacity-70 text-sm cursor-pointer shadow-sm active:scale-[0.99]"
                 >
                   {isLoading ? (
                     <span className="flex items-center justify-center gap-2.5">
