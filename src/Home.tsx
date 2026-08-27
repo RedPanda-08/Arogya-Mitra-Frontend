@@ -265,7 +265,7 @@ const Header: React.FC<{ onNavigate: (t: string) => void }> = ({ onNavigate }) =
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <button onClick={() => onNavigate("home")} className="flex items-center gap-3 text-xl font-bold text-[#001f3f] tracking-tight hover:opacity-80 transition-opacity cursor-pointer">
           <BrandMark />
-          AROGYA MITRA
+          AROGYA VITRA
         </button>
 
         <nav className="hidden md:flex items-center gap-2">
@@ -367,7 +367,7 @@ const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavig
           
           <Reveal delay={90}>
             <p className="mt-6 max-w-lg text-lg leading-relaxed text-slate-800 font-semibold">
-              Arogya Mitra connects patients, doctors and hospitals on a single intelligent system — with real-time
+              Arogya Vitra connects patients, doctors and hospitals on a single intelligent system — with real-time
               emergency response, AI-guided diagnostics and support in every Indian language.
             </p>
           </Reveal>
@@ -386,7 +386,7 @@ const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavig
           <Reveal delay={150}>
             <div className="mt-12 flex gap-8 pt-8 border-t border-slate-200">
               {[
-                ["7", "Platform microservices"],
+                ["8", "Platform microservices"],
                 ["108", "Emergency SOS network"],
                 ["3", "Connected layers"],
               ].map(([num, label]) => (
@@ -441,7 +441,7 @@ const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavig
     <div className="py-16">
       <div className="mx-auto max-w-6xl px-6">
         <div className="mx-auto mb-16 max-w-2xl text-center">
-          <Eyebrow className="mx-auto mb-4">Why Arogya Mitra</Eyebrow>
+          <Eyebrow className="mx-auto mb-4">Why Arogya Vitra</Eyebrow>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[#001f3f]">
             Care that doesn&rsquo;t drop the thread
           </h2>
@@ -518,7 +518,7 @@ const LAYER_DETAILS = [
     border: "border-t-[#001f3f]",
     img: IMAGES.hospitalHms,
     items: [
-      "Arogya Mitra HMS for hospital administration",
+      "Arogya Vitra HMS for hospital administration",
       "Av Care Sub, the companion app for doctors",
       "AI analytics dashboard for hospital management",
       "Home-to-hospital transport and attendant service",
@@ -552,12 +552,12 @@ const DIFFERENTIATORS = [
 const AboutSection: React.FC = () => (
   <div className="mx-auto max-w-6xl px-6 py-16">
     <div className="mb-2">
-      <Eyebrow>About Arogya Mitra</Eyebrow>
+      <Eyebrow>About Arogya Vitra</Eyebrow>
       <h1 className="mt-4 text-3xl sm:text-4xl font-extrabold text-[#001f3f]">
         A centralized system, built in three layers.
       </h1>
       <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700 font-semibold">
-        Most healthcare apps solve one piece of the journey — booking, or records, or hospital admin. Arogya Mitra was
+        Most healthcare apps solve one piece of the journey — booking, or records, or hospital admin. Arogya Vitra was
         built to hold all of it together, so a patient&rsquo;s history, a doctor&rsquo;s schedule and a
         hospital&rsquo;s operations stay in sync.
       </p>
@@ -701,9 +701,9 @@ const Footer: React.FC = () => (
     <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 text-sm font-medium text-slate-600 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2">
         <BrandMark />
-        <span className="font-bold text-[#001f3f] tracking-tight ml-1">AROGYA MITRA</span>
+        <span className="font-bold text-[#001f3f] tracking-tight ml-1">AROGYA VITRA</span>
       </div>
-      <span>© {new Date().getFullYear()} Arogya Mitra. Hyderabad, India.</span>
+      <span>© {new Date().getFullYear()} Arogya Vitra. Hyderabad, India.</span>
       <span className="font-semibold text-slate-500">AV Care · Central Intelligence · Hospital System</span>
     </div>
   </footer>

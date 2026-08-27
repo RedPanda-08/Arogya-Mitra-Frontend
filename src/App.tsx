@@ -5,9 +5,9 @@ import Signup from './Signup';
 import Home from './Home';
 import ForgotPassword from './ForgotPassword';
 import ResetPassword from './ResetPassword';
-import PatientProfile from './Components/PatientProfile';
-import PatientOnboarding from './Components/PatientOnboarding';
-import DashboardPatient from './Components/DashboardPatient';
+import PatientProfile from './Patient/PatientProfile';
+import PatientOnboarding from './Patient/PatientOnboarding';
+import DashboardPatient from './Patient/DashboardPatient';
 import { usePatientStore } from './store/usePatientStore';
 
 // Protected Route Guard (For Logged-In Users Only)

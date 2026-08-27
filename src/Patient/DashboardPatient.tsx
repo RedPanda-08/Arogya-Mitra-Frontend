@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { apiClient } from '../services/api';
 import { usePatientStore } from '../store/usePatientStore';
 import logo from '../am-logo.jpeg';
+import { apiClient } from '../services/api';
+// 🔴 FIX 1: Import dedicated patient service API (Port 8082)
+import { patientApi } from '../services/patientApi';
 
 // ---------------------------------------------------------------------------
 // SVG Icons
@@ -185,10 +187,36 @@ const NAV_ITEMS: NavItem[] = [
 export default function DashboardHome() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { patient, clearPatient } = usePatientStore();
+  const { patient, setPatient, clearPatient } = usePatientStore();
 
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState<boolean>(false);
+  const [isSyncing, setIsSyncing] = useState<boolean>(true);
+
+  // 🔄 AUTO-SYNC LOGIC: Fetch fresh database state on dashboard mount via patientApi (Port 8082)
+  useEffect(() => {
+    const syncPatientData = async () => {
+      const storedUserId = localStorage.getItem('userId') || patient?.userId;
+      if (!storedUserId) {
+        setIsSyncing(false);
+        return;
+      }
+
+      try {
+        // 🔴 FIX 2: Use patientApi.getByUserId to route to Port 8082 instead of Gateway 8080
+        const freshPatient = await patientApi.getByUserId(storedUserId);
+        if (freshPatient) {
+          setPatient(freshPatient);
+        }
+      } catch (error) {
+        console.error("Failed to sync latest patient state:", error);
+      } finally {
+        setIsSyncing(false);
+      }
+    };
+
+    syncPatientData();
+  }, []);
 
   const firstName = patient?.fullName ? patient.fullName.split(' ')[0] : 'Patient';
   const shortId = patient?.patientId
@@ -245,9 +273,7 @@ export default function DashboardHome() {
         }
       `}</style>
 
-      {/* ------------------------------------------------------------- */}
-      {/* Sidebar                                                       */}
-      {/* ------------------------------------------------------------- */}
+      {/* Sidebar */}
       <aside
         className={`fixed sm:sticky top-0 h-screen w-64 bg-white border-r border-slate-200 flex flex-col z-50 transition-transform duration-200
           ${isMobileNavOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'}`}
@@ -327,9 +353,7 @@ export default function DashboardHome() {
         />
       )}
 
-      {/* ------------------------------------------------------------- */}
-      {/* Main column                                                   */}
-      {/* ------------------------------------------------------------- */}
+      {/* Main column */}
       <div className="flex-1 min-w-0 flex flex-col">
 
         {/* Topbar */}
@@ -363,7 +387,7 @@ export default function DashboardHome() {
             </button>
           </div>
 
-          {/* SOS Banner (Compacted, removed transparent box) */}
+          {/* SOS Banner */}
           <div className="relative bg-gradient-to-r from-rose-600 via-rose-700 to-red-800 rounded-2xl p-5 sm:p-6 text-white shadow-md overflow-hidden border border-rose-800/50">
             <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 800 120" preserveAspectRatio="none" aria-hidden="true">
               <path
@@ -422,17 +446,26 @@ export default function DashboardHome() {
               </div>
             </div>
 
+            {/* DYNAMIC VERIFICATION BADGE CARD WITH SYNC STATE */}
             <div className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col gap-1.5">
               <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
                 <ShieldIcon className="w-3.5 h-3.5 text-emerald-600" /> Status
               </div>
-              <div className="inline-flex self-start items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 px-2.5 py-1 rounded-md text-xs font-bold shadow-sm">
-                <CheckCircleIcon className="w-3.5 h-3.5" /> Identity Verified
-              </div>
+              {isSyncing ? (
+                <div className="w-28 h-6 bg-slate-100 animate-pulse rounded-md" />
+              ) : patient?.active ? (
+                <div className="inline-flex self-start items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 px-2.5 py-1 rounded-md text-xs font-bold shadow-sm">
+                  <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600" /> Identity Verified
+                </div>
+              ) : (
+                <div className="inline-flex self-start items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-md text-xs font-bold shadow-sm">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" /> Verification Pending
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Compacted Service shortcuts */}
+          {/* Service shortcuts */}
           <div>
             <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-3 px-1">Quick Actions</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
