@@ -52,11 +52,10 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center font-sans text-slate-800 p-6 antialiased relative overflow-hidden">
+    <div className="relative min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6 font-sans text-slate-800 antialiased overflow-hidden">
       
-      {/* 🌿 Smooth Light Green Floating Corner Gradients */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-300/70 via-emerald-100/20 to-transparent pointer-events-none z-0" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-emerald-200/50 via-transparent to-transparent pointer-events-none z-0" />
+      {/* 🌿 Soft Top Accent Gradient Matching Login Screen */}
+      <div className="absolute top-0 inset-x-0 h-72 bg-gradient-to-b from-teal-50/90 to-transparent pointer-events-none z-0" />
 
       {/* Main Card Container */}
       <div className="bg-white p-8 sm:p-12 rounded-3xl shadow-xl border border-slate-200/80 max-w-md w-full relative z-10">
@@ -101,7 +100,7 @@ export default function ForgotPassword() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent text-sm font-medium transition-all"
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent text-sm font-medium transition-all"
                   />
                 </div>
               </div>
@@ -110,7 +109,7 @@ export default function ForgotPassword() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3.5 bg-teal-700 hover:bg-teal-800 text-white font-bold rounded-xl  focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 transition-all disabled:opacity-70 text-sm cursor-pointer shadow-sm active:scale-[0.99]"
+                  className="w-full py-3.5 bg-teal-700 hover:bg-teal-800 text-white font-bold rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2 transition-all disabled:opacity-70 text-sm cursor-pointer shadow-sm active:scale-[0.99]"
                 >
                   {isLoading ? (
                     <span className="flex items-center justify-center gap-2.5">
@@ -127,19 +126,19 @@ export default function ForgotPassword() {
         ) : (
           /* Confirmation Success State */
           <div className="text-center py-6">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center mx-auto mb-6 shadow-xs">
+            <div className="w-16 h-16 rounded-2xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center mx-auto mb-6 shadow-xs">
               <CheckCircleIcon className="w-9 h-9" />
             </div>
             <h2 className="text-2xl font-extrabold text-[#001f3f]">Check Your Email</h2>
             <p className="text-sm text-slate-600 font-medium mt-3 leading-relaxed">
               {message}
             </p>
-            <div className="mt-8 p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl text-xs text-emerald-800 font-semibold leading-relaxed">
+            <div className="mt-8 p-4 bg-teal-50/60 border border-teal-200 rounded-2xl text-xs text-teal-800 font-semibold leading-relaxed">
               Didn't receive the email? Check your spam folder or try again.
             </div>
             <button
               onClick={() => setIsSent(false)}
-              className="mt-6 text-xs font-bold text-emerald-800 hover:text-emerald-900 transition-colors cursor-pointer py-1.5 px-3 rounded-lg hover:bg-emerald-50"
+              className="mt-6 text-xs font-bold text-teal-800 hover:text-teal-900 transition-colors cursor-pointer py-1.5 px-3 rounded-lg hover:bg-teal-50"
             >
               Re-enter email address
             </button>
@@ -150,7 +149,7 @@ export default function ForgotPassword() {
         <div className="mt-10 pt-8 border-t border-slate-100 text-center">
           <Link 
             to="/login" 
-            className="inline-flex items-center gap-2.5 text-sm font-bold text-emerald-800 hover:text-emerald-900 transition-colors group"
+            className="inline-flex items-center gap-2.5 text-sm font-bold text-teal-800 hover:text-teal-900 transition-colors group"
           >
             <ArrowLeftIcon className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             Back to Login

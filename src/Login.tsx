@@ -146,12 +146,12 @@ export default function Login() {
             <div className="w-16 h-16 rounded-xl bg-teal-700 mb-4 flex items-center justify-center text-white shadow-md overflow-hidden">
               <img 
                 src={logo} 
-                alt="Arogya Mitra Logo" 
+                alt="Arogya Vitra Logo" 
                 className="w-full h-full object-cover mix-blend-multiply filter contrast-125" 
               />
             </div>
             <h1 className="text-2xl font-extrabold text-[#001f3f] tracking-tight">
-              AROGYA MITRA
+              AROGYA VITRA
             </h1>
           </div>
           <p className="text-slate-500 mt-2 text-sm font-medium">

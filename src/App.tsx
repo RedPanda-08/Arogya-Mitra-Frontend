@@ -7,6 +7,7 @@ import ForgotPassword from './ForgotPassword';
 import ResetPassword from './ResetPassword';
 import PatientProfile from './Components/PatientProfile';
 import PatientOnboarding from './Components/PatientOnboarding';
+import DashboardPatient from './Components/DashboardPatient';
 import { usePatientStore } from './store/usePatientStore';
 
 // Protected Route Guard (For Logged-In Users Only)
@@ -26,8 +27,8 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   const patient = usePatientStore((state) => state.patient);
   
   if (token) {
-    // Directs onboarded patients to dashboard, new users to onboarding
-    const destination = patient ? "/profile" : "/onboarding";
+    // Directs onboarded patients to the main Dashboard hub, new users to onboarding
+    const destination = patient ? "/dashboard" : "/onboarding";
     return <Navigate to={destination} replace />;
   }
 
@@ -71,13 +72,24 @@ export default function App() {
           } 
         />
         <Route 
-          path="/profile" 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <DashboardPatient />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/patient-profile" 
           element={
             <ProtectedRoute>
               <PatientProfile />
             </ProtectedRoute>
           } 
         />
+        
+        {/* Legacy fallback redirect */}
+        <Route path="/profile" element={<Navigate to="/patient-profile" replace />} />
         
         {/* Catch-all Route */}
         <Route path="*" element={<Navigate to="/" replace />} />
