@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { usePatientStore } from '../store/usePatientStore';
 import logo from '../am-logo.jpeg';
 import { apiClient } from '../services/api';
-// 🔴 FIX 1: Import dedicated patient service API (Port 8082)
 import { patientApi } from '../services/patientApi';
 
 // ---------------------------------------------------------------------------
@@ -216,6 +214,7 @@ export default function DashboardHome() {
     };
 
     syncPatientData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const firstName = patient?.fullName ? patient.fullName.split(' ')[0] : 'Patient';

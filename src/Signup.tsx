@@ -111,7 +111,7 @@ export default function Signup() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-slate-50 p-4 font-sans text-slate-800 overflow-hidden">
+    <div className="relative min-h-screen flex items-center justify-center bg-slate-50 p-4 font-sans text-slate-800">
       
       {/* Soft, non-glowing top accent gradient */}
       <div className="absolute top-0 inset-x-0 h-64 bg-gradient-to-b from-teal-50/80 to-transparent pointer-events-none z-0"></div>
@@ -132,7 +132,7 @@ export default function Signup() {
               {step === 'form' ? 'Create an Account' : 'Verify Your Email'}
             </h1>
           </div>
-          <p className="text-slate-500 mt-2 text-sm font-medium">
+          <p className="text-slate-500 mt-2 text-sm font-medium break-words">
             {step === 'form' 
               ? 'Set up your Arogya Vitra patient profile.' 
               : `We sent a verification code to ${email}`}
