@@ -32,16 +32,20 @@ export const usePatientStore = create<PatientState>()(
           return patientData;
         } catch (err: unknown) {
           const errorObj = err as { response?: { status?: number; data?: { message?: string } } };
-          
-          // 404 status indicates onboarding form needs to be completed
+
+          // 404 status indicates onboarding form needs to be completed —
+          // this is the only case where clearing the patient is correct.
           if (errorObj.response?.status === 404) {
             set({ patient: null, isLoading: false, error: 'NO_PROFILE' });
           } else {
-            set({ 
-              patient: null, 
-              isLoading: false, 
-              error: errorObj.response?.data?.message || 'Failed to fetch patient profile' 
-            });
+            // Any other failure (network blip, 500, timeout) is transient —
+            // keep whatever patient data we already have instead of
+            // wiping a valid session out from under the user.
+            set((state) => ({
+              patient: state.patient,
+              isLoading: false,
+              error: errorObj.response?.data?.message || 'Failed to fetch patient profile',
+            }));
           }
           return null;
         }

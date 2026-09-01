@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../services/api';
 import { patientApi, type PatientRequestDTO } from '../services/patientApi';
@@ -65,10 +65,10 @@ const getInitials = (name: string) => {
 // ---------------------------------------------------------------------------
 // Row Component
 // ---------------------------------------------------------------------------
-const InfoRow: React.FC<{ label: string; value: React.ReactNode; labelClassName?: string }> = ({ label, value, labelClassName }) => (
-  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-4 first:pt-0 last:pb-0">
-    <label className={`text-[11px] font-extrabold uppercase tracking-widest shrink-0 sm:w-52 ${labelClassName || 'text-slate-400'}`}>{label}</label>
-    <div className="text-sm font-bold text-slate-900 sm:text-right">{value}</div>
+const InfoRow: React.FC<{ label: string; value: React.ReactNode; labelClassName?: string; stacked?: boolean }> = ({ label, value, labelClassName, stacked }) => (
+  <div className={`flex gap-1 py-4 first:pt-0 last:pb-0 ${stacked ? 'flex-col' : 'flex-col sm:flex-row sm:items-center justify-between'}`}>
+    <label className={`text-[11px] font-extrabold uppercase tracking-widest shrink-0 ${stacked ? '' : 'sm:w-52'} ${labelClassName || 'text-slate-400'}`}>{label}</label>
+    <div className={`text-sm font-bold text-slate-900 min-w-0 ${stacked ? 'text-left mt-1.5' : 'sm:text-right'}`}>{value}</div>
   </div>
 );
 
@@ -89,9 +89,18 @@ export default function PatientProfile() {
     address: ''
   });
 
+  const addressRef = useRef<HTMLTextAreaElement>(null);
+
   useEffect(() => {
     if (!patient) navigate('/onboarding');
   }, [patient, navigate]);
+
+  useEffect(() => {
+    if (patient?.userId) {
+      usePatientStore.getState().fetchPatientByUserId(String(patient.userId));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (showUpdateToast) {
@@ -100,17 +109,26 @@ export default function PatientProfile() {
     }
   }, [showUpdateToast]);
 
-  const handleOpenEdit = () => {
-    if (patient) {
-      setEditForm({
-        fullName: patient.fullName || '',
-        dateOfBirth: patient.dateOfBirth || '',
-        phoneNumber: (patient.phoneNumber || '').replace('+91', '').trim(),
-        emergencyContact: (patient.emergencyContact || '').replace('+91', '').trim(),
-        address: patient.address || '',
-      });
-      setIsEditModalOpen(true);
+  useEffect(() => {
+    if (isEditModalOpen && addressRef.current) {
+      const el = addressRef.current;
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
     }
+  }, [isEditModalOpen]);
+
+  // ⚡ INSTANT RESPONSE: Opens modal immediately with 0ms UI delay
+  const handleOpenEdit = () => {
+    if (!patient) return;
+
+    setEditForm({
+      fullName: patient.fullName || '',
+      dateOfBirth: patient.dateOfBirth || '',
+      phoneNumber: (patient.phoneNumber || '').replace('+91', '').trim(),
+      emergencyContact: (patient.emergencyContact || '').replace('+91', '').trim(),
+      address: patient.address || '',
+    });
+    setIsEditModalOpen(true);
   };
 
   const handleUpdateSubmit = async (e: React.FormEvent) => {
@@ -186,7 +204,7 @@ export default function PatientProfile() {
 
       {/* Toast Notification */}
       {showUpdateToast && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-top-8 fade-in duration-300 pointer-events-none">
+        <div className="fixed top-10 right-6 z-[100] animate-in slide-in-from-right-8 fade-in duration-300 ease-out pointer-events-none">
           <div className="bg-white border border-emerald-200 shadow-xl rounded-2xl p-4 flex items-center gap-4 min-w-[300px]">
             <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 shrink-0">
               <CheckIcon className="w-5 h-5" />
@@ -198,7 +216,7 @@ export default function PatientProfile() {
           </div>
         </div>
       )}
-
+ 
       {/* Focused Header */}
       <header className="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -221,7 +239,6 @@ export default function PatientProfile() {
               <span className="sm:hidden">Back</span>
             </button>
 
-            {/* Quick Sign Out Button with Explicit Text */}
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
@@ -234,7 +251,7 @@ export default function PatientProfile() {
         </div>
       </header>
 
-      {/* Main Content Area (Narrower for focus) */}
+      {/* Main Content Area */}
       <main className="av-content-enter flex-grow w-full max-w-3xl mx-auto px-4 sm:px-6 py-10 space-y-8">
 
         {/* Page Title & Edit Action */}
@@ -307,7 +324,11 @@ export default function PatientProfile() {
               labelClassName="text-rose-500"
               value={formatPhoneNumber(patient.emergencyContact)}
             />
-            <InfoRow label="Registered address" value={<span className="leading-relaxed">{patient.address}</span>} />
+            <InfoRow
+              label="Registered address"
+              stacked
+              value={<span className="leading-relaxed break-words">{patient.address}</span>}
+            />
           </div>
         </div>
 
@@ -439,10 +460,16 @@ export default function PatientProfile() {
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">Registered address</label>
                 <textarea
+                  ref={addressRef}
                   rows={2}
                   value={editForm.address}
                   onChange={(e) => setEditForm({...editForm, address: e.target.value})}
-                  className="w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 outline-none resize-none transition-all"
+                  onInput={(e) => {
+                    const el = e.currentTarget;
+                    el.style.height = 'auto';
+                    el.style.height = `${el.scrollHeight}px`;
+                  }}
+                  className="w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 outline-none resize-none overflow-hidden transition-all"
                   required
                 />
               </div>
