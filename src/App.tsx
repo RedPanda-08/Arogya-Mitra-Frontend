@@ -9,6 +9,7 @@ import PatientProfile from './Patient/PatientProfile';
 import PatientOnboarding from './Patient/PatientOnboarding';
 import DashboardPatient from './Patient/DashboardPatient';
 import { usePatientStore } from './store/usePatientStore';
+import BrowseHospitals from './Hospital/BrowseHospitals';
 
 // Protected Route Guard (For Logged-In Users Only)
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -41,7 +42,8 @@ export default function App() {
       <Routes>
         {/* Landing Page */}
         <Route path="/" element={<Home />} />
-        
+        <Route path="/hospitals" element={<BrowseHospitals />} />
+
         {/* Public-Only Auth Routes */}
         <Route 
           path="/login" 
@@ -51,6 +53,7 @@ export default function App() {
             </PublicRoute>
           } 
         />
+        
         <Route 
           path="/signup" 
           element={
@@ -63,13 +66,9 @@ export default function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Protected Patient Routes */}
-        <Route 
-          path="/onboarding" 
-          element={
-            <ProtectedRoute>
-              <PatientOnboarding />
-            </ProtectedRoute>
-          } 
+        
+        <Route path="/onboarding" element={
+          <PatientOnboarding/>}
         />
         <Route 
           path="/dashboard" 

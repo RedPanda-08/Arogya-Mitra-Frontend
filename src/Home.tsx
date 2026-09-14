@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import logo from './am-logo.jpeg';
 
 // ---------------------------------------------------------------------------
-// Types & Image Assets (Live Unsplash CDN)
+// Types & Image Assets
 // ---------------------------------------------------------------------------
 type TabId = "home" | "about" | "contact";
 
@@ -18,14 +18,28 @@ const IMAGES = {
 };
 
 // ---------------------------------------------------------------------------
-// Safe Image Component (Prevents Broken Image Icons on Other Machines)
+// Safe Image Component (Bulletproof Fallback System)
 // ---------------------------------------------------------------------------
-const SafeImage: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className = '' }) => {
+const SafeImage: React.FC<{ 
+  src: string; 
+  fallbackSrc?: string; 
+  alt: string; 
+  className?: string 
+}> = ({ src, fallbackSrc, alt, className = '' }) => {
+  const [imgSrc, setImgSrc] = useState(src);
   const [hasError, setHasError] = useState(false);
+
+  const handleError = () => {
+    if (fallbackSrc && imgSrc !== fallbackSrc) {
+      setImgSrc(fallbackSrc);
+    } else {
+      setHasError(true);
+    }
+  };
 
   if (hasError) {
     return (
-      <div className={`bg-gradient-to-br from-emerald-800 via-teal-900 to-slate-900 flex items-center justify-center text-white/70 font-semibold text-xs text-center p-2 ${className}`}>
+      <div className={`bg-gradient-to-br from-emerald-800 via-teal-900 to-slate-900 flex items-center justify-center text-white/80 font-bold text-xs p-3 text-center ${className}`}>
         <span>{alt}</span>
       </div>
     );
@@ -33,10 +47,14 @@ const SafeImage: React.FC<{ src: string; alt: string; className?: string }> = ({
 
   return (
     <img
-      src={src}
+      src={imgSrc}
       alt={alt}
       className={className}
-      onError={() => setHasError(true)}
+      loading="lazy"
+      decoding="async"
+      crossOrigin="anonymous"
+      referrerPolicy="no-referrer"
+      onError={handleError}
     />
   );
 };
@@ -119,17 +137,16 @@ const MailIcon: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 );
 const PinIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" {...iconProps}>
-    <path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 0118 0z" />
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
     <circle cx="12" cy="10" r="3" />
   </svg>
 );
 const PhoneIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" {...iconProps}>
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
     <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.12.9.34 1.78.65 2.62a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.46-1.22a2 2 0 012.11-.45c.84.31 1.72.53 2.62.65A2 2 0 0122 16.92z" />
   </svg>
 );
-// Added: mobile menu open/close icons (same handwritten-svg pattern as the icons above)
 const MenuIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" {...iconProps}>
     <path d="M4 7h16M4 12h16M4 17h16" />
@@ -140,9 +157,14 @@ const XIcon: React.FC<{ className?: string }> = ({ className }) => (
     <path d="M6 6l12 12M18 6L6 18" />
   </svg>
 );
+const StarIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+  </svg>
+);
 
 const BrandMark: React.FC = () => (
-  <div className="w-9 h-9 rounded-xl bg-emerald-700 flex items-center justify-center text-white shadow-sm overflow-hidden shrink-0">
+  <div className="w-9 h-9 rounded-xl bg-emerald-700 flex items-center justify-center text-white shadow-xs overflow-hidden shrink-0">
     <img 
       src={logo} 
       alt="Arogya Mitra Logo" 
@@ -161,6 +183,8 @@ const Reveal: React.FC<{
 }> = ({ children, delay = 0, className = "" }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+
+ 
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -195,7 +219,7 @@ const Reveal: React.FC<{
 // ---------------------------------------------------------------------------
 const Eyebrow: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = "" }) => (
   <div
-    className={`inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200/80 px-3 py-1.5 sm:px-3.5 font-sans text-[11px] sm:text-xs font-bold uppercase tracking-widest text-emerald-800 shadow-2xs ${className}`}
+    className={`inline-flex items-center gap-2 rounded-full bg-emerald-50/80 px-3.5 py-1.5 font-sans text-[11px] sm:text-xs font-bold uppercase tracking-widest text-emerald-800 shadow-2xs ${className}`}
   >
     <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-600 shrink-0" />
     {children}
@@ -210,11 +234,11 @@ const Button: React.FC<
   const variants: Record<ButtonVariant, string> = {
     primary: "bg-emerald-700 text-white hover:bg-emerald-800 shadow-xs focus:ring-emerald-600",
     accent: "bg-[#001f3f] text-white hover:bg-[#00152e] shadow-xs focus:ring-[#001f3f]",
-    ghost: "bg-transparent text-emerald-900 hover:bg-emerald-50 border border-transparent",
+    ghost: "bg-transparent text-emerald-900 hover:bg-emerald-50/60",
   };
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-95 cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 ${
+      className={`inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-95 cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 ${
         variants[variant]
       } ${block ? "w-full" : ""} ${className}`}
       {...rest}
@@ -245,7 +269,7 @@ const Field: React.FC<{
         required={required}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="min-h-[100px] w-full resize-y pl-4 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-colors"
+        className="min-h-[100px] w-full resize-y pl-4 pr-4 py-2.5 bg-slate-50/80 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600/30 focus:bg-white transition-colors"
       />
     ) : (
       <input
@@ -255,14 +279,14 @@ const Field: React.FC<{
         required={required}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full pl-4 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-colors"
+        className="w-full pl-4 pr-4 py-2.5 bg-slate-50/80 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600/30 focus:bg-white transition-colors"
       />
     )}
   </div>
 );
 
 // ---------------------------------------------------------------------------
-// Header
+// Header (Navbar: Smooth Blur Header)
 // ---------------------------------------------------------------------------
 const NAV_LINKS: { id: TabId; label: string }[] = [
   { id: "home", label: "Home" },
@@ -271,9 +295,6 @@ const NAV_LINKS: { id: TabId; label: string }[] = [
 ];
 
 const Header: React.FC<{ onNavigate: (t: string) => void }> = ({ onNavigate }) => {
-  // Added: mobile menu open state. Nav links and Sign in were previously
-  // `hidden` below the `md` breakpoint with no alternate way to reach them —
-  // this restores access to the same onNavigate handler on mobile.
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleMobileNavigate = (path: string) => {
@@ -282,19 +303,19 @@ const Header: React.FC<{ onNavigate: (t: string) => void }> = ({ onNavigate }) =
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200/80 shadow-2xs">
+    <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-md transition-shadow">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4">
-        <button onClick={() => handleMobileNavigate("home")} className="flex items-center gap-2.5 sm:gap-3 text-base sm:text-xl font-bold text-[#001f3f] tracking-tight hover:opacity-80 transition-opacity cursor-pointer">
+        <nav onClick={() => handleMobileNavigate("home")} className="flex items-center gap-2.5 sm:gap-3 text-base sm:text-xl font-bold text-[#001f3f] tracking-tight">
           <BrandMark />
           <span className="whitespace-nowrap">AROGYA VITRA</span>
-        </button>
+        </nav>
 
-        <nav className="hidden md:flex items-center gap-2">
+        <nav className="hidden md:flex items-center gap-1.5">
           {NAV_LINKS.map((link) => (
             <button
               key={link.id}
               onClick={() => onNavigate(link.id)}
-              className="rounded-lg px-4 py-2 text-sm font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-900 transition-colors cursor-pointer"
+              className="rounded-xl px-4 py-2 text-sm font-bold text-slate-700 hover:bg-emerald-50/70 hover:text-emerald-900 transition-colors cursor-pointer"
             >
               {link.label}
             </button>
@@ -308,25 +329,24 @@ const Header: React.FC<{ onNavigate: (t: string) => void }> = ({ onNavigate }) =
           >
             Sign in
           </button>
-          <Button variant="primary" onClick={() => onNavigate("register")} className="px-3.5 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm">
+          <Button variant="primary" onClick={() => onNavigate("register")} className="px-4 py-2 text-xs sm:px-5 sm:py-2.5 sm:text-sm shadow-xs">
             Get Started
           </Button>
-          {/* Added: hamburger toggle, mobile-only */}
+
           <button
             onClick={() => setMobileOpen((v) => !v)}
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileOpen}
-            className="md:hidden inline-flex items-center justify-center rounded-lg p-2 text-[#001f3f] hover:bg-emerald-50 transition-colors cursor-pointer"
+            className="md:hidden inline-flex items-center justify-center rounded-xl p-2 text-[#001f3f] hover:bg-emerald-50/70 transition-colors cursor-pointer"
           >
             {mobileOpen ? <XIcon className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
           </button>
         </div>
       </div>
 
-      {/* Added: mobile nav panel */}
       <div
-        className={`md:hidden overflow-hidden transition-all duration-300 ease-out border-t border-slate-200/80 bg-white ${
-          mobileOpen ? "max-h-80 opacity-100" : "max-h-0 opacity-0 border-t-0"
+        className={`md:hidden overflow-hidden transition-all duration-300 ease-out bg-white/95 backdrop-blur-md ${
+          mobileOpen ? "max-h-80 opacity-100 shadow-sm" : "max-h-0 opacity-0"
         }`}
       >
         <nav className="flex flex-col px-4 py-3 gap-1">
@@ -334,14 +354,14 @@ const Header: React.FC<{ onNavigate: (t: string) => void }> = ({ onNavigate }) =
             <button
               key={link.id}
               onClick={() => handleMobileNavigate(link.id)}
-              className="rounded-lg px-3 py-2.5 text-left text-sm font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-900 transition-colors cursor-pointer"
+              className="rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-900 transition-colors cursor-pointer"
             >
               {link.label}
             </button>
           ))}
           <button
             onClick={() => handleMobileNavigate("login")}
-            className="rounded-lg px-3 py-2.5 text-left text-sm font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-900 transition-colors cursor-pointer"
+            className="rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-900 transition-colors cursor-pointer"
           >
             Sign in
           </button>
@@ -352,7 +372,194 @@ const Header: React.FC<{ onNavigate: (t: string) => void }> = ({ onNavigate }) =
 };
 
 // ---------------------------------------------------------------------------
-// Home Section (Unified Flow with Safe Unsplash Images)
+// Dedicated Hospital Network Section (No Jump, Modern Emerald Border Glow)
+// ---------------------------------------------------------------------------
+const PREVIEW_HOSPITALS = [
+  {
+    id: "h-001",
+    name: "Apollo Multispecialty Hospital",
+    address: "Road No. 72, Jubilee Hills, Hyderabad",
+    phone: "+91 40 2360 7777",
+    emergencyPhone: "1066",
+    beds: 34,
+    rating: 4.8,
+    departments: ["Cardiology", "Neurology", "Emergency"],
+    extraDeptsCount: 1,
+    img: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80",
+    fallbackImg: "https://images.pexels.com/photos/668300/pexels-photo-668300.jpeg?auto=compress&cs=tinysrgb&w=800",
+  },
+  {
+    id: "h-002",
+    name: "Yashoda Care Center",
+    address: "Alexander Road, Secunderabad, Hyderabad",
+    phone: "+91 40 4567 4567",
+    emergencyPhone: "105910",
+    beds: 12,
+    rating: 4.6,
+    departments: ["Orthopedics", "Pulmonology", "General Surgery"],
+    extraDeptsCount: 0,
+    img: "https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?auto=format&fit=crop&w=800&q=80",
+    fallbackImg: "https://images.pexels.com/photos/263402/pexels-photo-263402.jpeg?auto=compress&cs=tinysrgb&w=800",
+  },
+  {
+    id: "h-003",
+    name: "Care Hospitals Regional Hub",
+    address: "Banjara Hills, Road No. 1, Hyderabad",
+    phone: "+91 40 6165 6565",
+    emergencyPhone: "105711",
+    beds: 0,
+    rating: 4.5,
+    departments: ["Pediatrics", "Cardiology", "Nephrology"],
+    extraDeptsCount: 0,
+    img: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80",
+    fallbackImg: "https://images.pexels.com/photos/247786/pexels-photo-247786.jpeg?auto=compress&cs=tinysrgb&w=800",
+  },
+];
+
+const HospitalNetworkSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => (
+  <section className="bg-gradient-to-b from-transparent via-slate-50/70 to-transparent py-14 sm:py-20">
+    <div className="mx-auto max-w-6xl px-4 sm:px-6">
+      
+      {/* Section Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 sm:mb-12">
+        <div className="max-w-2xl">
+          <Eyebrow className="mb-3">Live Facility Network</Eyebrow>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#001f3f] tracking-tight">
+            Verified regional hospitals & real-time bed tracking.
+          </h2>
+          <p className="mt-3 text-base sm:text-lg font-medium text-slate-700">
+            Check live occupancy, locate specialized clinical departments, and view emergency readiness across partnered centers before arriving.
+          </p>
+        </div>
+
+        <button
+          onClick={() => onNavigate("hospitals")}
+          className="group inline-flex items-center gap-2 self-start md:self-auto rounded-xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white shadow-xs hover:bg-emerald-800 active:scale-95 transition-all cursor-pointer shrink-0"
+        >
+          <HospitalIcon className="h-4 w-4" />
+          <span>Browse All Facilities</span>
+          <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
+        </button>
+      </div>
+
+      {/* 3 Hospital Cards */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {PREVIEW_HOSPITALS.map((h) => {
+          const hasBeds = h.beds > 0;
+          return (
+            <div
+              key={h.id}
+              onClick={() => onNavigate("hospitals")}
+              className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:border-emerald-400 hover:shadow-md transition-all duration-300 flex flex-col overflow-hidden cursor-pointer"
+            >
+              {/* Photo Container */}
+              <div className="h-48 w-full relative overflow-hidden bg-slate-900">
+                <SafeImage
+                  src={h.img}
+                  fallbackSrc={h.fallbackImg}
+                  alt={h.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent pointer-events-none" />
+
+                {/* Bed Capacity Pill (Bottom Left) */}
+                <span className={`absolute bottom-3 left-3 px-3 py-1 rounded-md text-[11px] font-extrabold tracking-wide uppercase shadow-sm ${
+                  hasBeds ? "bg-[#059669] text-white" : "bg-[#e11d48] text-white"
+                }`}>
+                  {hasBeds ? `${h.beds} BEDS VACANT` : "BEDS FULL"}
+                </span>
+
+                {/* Star Rating Badge (Top Right) */}
+                <span className="absolute top-3 right-3 bg-white/95 backdrop-blur-xs px-2.5 py-0.5 rounded-md text-xs font-black text-slate-900 flex items-center gap-1 shadow-sm">
+                  <StarIcon className="w-3.5 h-3.5 text-amber-500" />
+                  {h.rating.toFixed(1)}
+                </span>
+              </div>
+
+              {/* Card Body */}
+              <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-900 group-hover:text-emerald-700 transition-colors line-clamp-1">
+                    {h.name}
+                  </h3>
+
+                  <p className="text-xs text-slate-500 mt-1.5 flex items-center gap-1.5 line-clamp-1">
+                    <PinIcon className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    {h.address}
+                  </p>
+
+                  <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+                    <PhoneIcon className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    {h.phone}
+                  </p>
+
+                  {/* Department Tags */}
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {h.departments.map((dept) => (
+                      <span key={dept} className="px-2.5 py-0.5 bg-slate-50 text-slate-600 rounded-md text-[11px] font-bold">
+                        {dept}
+                      </span>
+                    ))}
+                    {h.extraDeptsCount > 0 && (
+                      <span className="px-2 py-0.5 bg-slate-50 text-slate-400 rounded-md text-[11px] font-bold">
+                        +{h.extraDeptsCount}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Card Action Buttons */}
+                <div className="pt-3 flex items-center gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onNavigate("hospitals");
+                    }}
+                    className="flex-1 py-2.5 bg-[#059669] hover:bg-[#047857] text-white rounded-xl text-xs font-extrabold transition-colors cursor-pointer shadow-xs text-center"
+                  >
+                    View Beds & Slots
+                  </button>
+                  <a
+                    href={`tel:${h.emergencyPhone}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-black transition-colors flex items-center justify-center shrink-0 cursor-pointer"
+                    title="Direct Emergency SOS Line"
+                  >
+                    SOS
+                  </a>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Trust & Network Indicator Bar */}
+      <div className="mt-10 rounded-2xl bg-emerald-50/70 border border-emerald-200/60 p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-700 text-white shadow-xs">
+            <HospitalIcon className="h-5 w-5" />
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-[#001f3f]">Centralized Hospital Registry</h4>
+            <p className="text-xs font-semibold text-slate-600">Synchronized every 30 seconds with partner HMS endpoints.</p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => onNavigate("hospitals")}
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-2.5 text-xs font-bold text-emerald-900 shadow-2xs hover:bg-emerald-100/50 transition-colors cursor-pointer"
+        >
+          Open Hospital Directory
+        </button>
+      </div>
+
+    </div>
+  </section>
+);
+
+// ---------------------------------------------------------------------------
+// Home Section (Hero + Integrated Hospital Network + Features + CTA)
 // ---------------------------------------------------------------------------
 const LAYERS = [
   { idx: "01", title: "AV Care", desc: "Patient app, every Indian language", Icon: HeartIcon, tone: "emerald" as const, img: IMAGES.patientApp },
@@ -361,9 +568,9 @@ const LAYERS = [
 ];
 
 const layerTone: Record<string, string> = {
-  emerald: "bg-emerald-50 text-emerald-800 border border-emerald-200",
-  sage: "bg-teal-50 text-teal-800 border border-teal-200",
-  navy: "bg-slate-100 text-slate-800 border border-slate-200",
+  emerald: "bg-emerald-50 text-emerald-800",
+  sage: "bg-teal-50 text-teal-800",
+  navy: "bg-slate-100 text-slate-800",
 };
 
 const FEATURES = [
@@ -395,9 +602,8 @@ const FEATURES = [
 
 const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => (
   <>
-    {/* Hero Section */}
+    {/* 1. Hero Section */}
     <div className="relative overflow-hidden pt-10 pb-14 sm:pt-16 sm:pb-20 md:pt-24 md:pb-28">
-      {/* Background Banner */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden transform-gpu">
         <SafeImage 
           src={IMAGES.heroBanner} 
@@ -405,7 +611,7 @@ const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavig
           className="h-full w-full object-cover object-center opacity-80 filter saturate-110 contrast-110 brightness-100"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-white via-white/85 to-white/10" />
-        <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-white/95" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-white" />
       </div>
 
       <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 sm:gap-14 px-4 sm:px-6 md:grid-cols-[1.1fr_0.9fr]">
@@ -429,17 +635,17 @@ const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavig
           
           <Reveal delay={120}>
             <div className="mt-6 sm:mt-8 flex flex-wrap gap-3 sm:gap-4">
-              <Button variant="primary" onClick={() => onNavigate("register")} block className="sm:w-auto">
+              <Button variant="primary" onClick={() => onNavigate("register")} block className="sm:w-auto shadow-md hover:shadow-emerald-900/20">
                 Create Free Account
               </Button>
-              <Button variant="ghost" onClick={() => onNavigate("about")} block className="sm:w-auto">
+              <Button variant="ghost" onClick={() => onNavigate("about")} block className="sm:w-auto font-bold text-slate-700 hover:text-emerald-800">
                 See how it works →
               </Button>
             </div>
           </Reveal>
           
           <Reveal delay={150}>
-            <div className="mt-8 sm:mt-12 flex flex-wrap gap-6 sm:gap-8 pt-6 sm:pt-8 border-t border-slate-200">
+            <div className="mt-8 sm:mt-12 flex flex-wrap gap-6 sm:gap-8 pt-4">
               {[
                 ["8", "Platform microservices"],
                 ["108", "Emergency SOS network"],
@@ -458,17 +664,11 @@ const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavig
 
         {/* Hero Architecture Cards */}
         <div className="relative flex flex-col gap-3 sm:gap-4">
-          <div
-            className="absolute bottom-0 left-9 sm:left-10 top-6 z-0 w-0.5"
-            style={{
-              backgroundImage: "repeating-linear-gradient(to bottom, #059669 0 4px, transparent 4px 8px)",
-            }}
-          />
           {LAYERS.map((layer, index) => {
             const delays = [90, 120, 150];
             return (
               <Reveal key={layer.idx} delay={delays[index]} className="h-full">
-                <div className="relative flex items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-slate-200/90 bg-white/90 backdrop-blur-2xs p-4 sm:p-5 shadow-xs hover:border-emerald-300 transition-colors h-full">
+                <div className="relative flex items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-xs p-4 sm:p-5 shadow-sm hover:border-emerald-400 hover:shadow-md transition-all h-full">
                   <div className="flex items-center gap-3 sm:gap-4">
                     <span className="font-mono text-xs font-extrabold text-emerald-800">{layer.idx}</span>
                     <div className={`flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl ${layerTone[layer.tone]}`}>
@@ -482,7 +682,7 @@ const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavig
                   <SafeImage 
                     src={layer.img} 
                     alt={layer.title} 
-                    className="w-14 h-14 rounded-lg object-cover border border-slate-200 shrink-0 hidden sm:block" 
+                    className="w-14 h-14 rounded-xl object-cover shrink-0 hidden sm:block" 
                   />
                 </div>
               </Reveal>
@@ -492,7 +692,10 @@ const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavig
       </div>
     </div>
 
-    {/* Key Features Section */}
+    {/* 2. Hospital Network Section (Directly Below Hero) */}
+    <HospitalNetworkSection onNavigate={onNavigate} />
+
+    {/* 3. Key Features Section */}
     <div className="py-12 sm:py-16">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="mx-auto mb-10 sm:mb-16 max-w-2xl text-center">
@@ -507,8 +710,8 @@ const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavig
         </div>
         <div className="grid grid-cols-1 gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((f) => (
-            <div key={f.title} className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 hover:border-emerald-300 hover:shadow-md transition-all duration-200 h-full flex flex-col overflow-hidden">
-              <div className="h-28 sm:h-32 -mx-5 -mt-5 sm:-mx-6 sm:-mt-6 mb-4 overflow-hidden relative border-b border-slate-100">
+            <div key={f.title} className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-sm hover:border-emerald-400 hover:shadow-md transition-all duration-300 h-full flex flex-col overflow-hidden">
+              <div className="h-28 sm:h-32 -mx-5 -mt-5 sm:-mx-6 sm:-mt-6 mb-4 overflow-hidden relative">
                 <SafeImage src={f.img} alt={f.title} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-transparent" />
                 <f.Icon className="absolute bottom-3 left-4 h-7 w-7 text-white drop-shadow-md" />
@@ -521,7 +724,7 @@ const HomeSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavig
       </div>
     </div>
 
-    {/* Call-to-Action Section */}
+    {/* 4. Call-to-Action Section */}
     <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10 sm:py-12">
       <div className="relative overflow-hidden flex flex-col items-center justify-between gap-6 sm:gap-8 rounded-3xl bg-[#001f3f] p-7 sm:p-10 md:p-14 text-center md:flex-row md:text-left shadow-xl">
         <div className="absolute -right-20 -top-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -546,7 +749,7 @@ const LAYER_DETAILS = [
   {
     tag: "Layer 01 — Patient",
     title: "AV Care",
-    border: "border-t-emerald-600",
+    toneColor: "text-emerald-700 bg-emerald-50",
     img: IMAGES.patientApp,
     items: [
       "Mobile app for patients, in every Indian language",
@@ -558,7 +761,7 @@ const LAYER_DETAILS = [
   {
     tag: "Layer 02 — Intelligence",
     title: "Central Intelligence Platform",
-    border: "border-t-teal-600",
+    toneColor: "text-teal-700 bg-teal-50",
     img: IMAGES.centralAi,
     items: [
       "Connects every app and hospital system in real time",
@@ -570,7 +773,7 @@ const LAYER_DETAILS = [
   {
     tag: "Layer 03 — Hospital",
     title: "Hospital / Doctor System",
-    border: "border-t-[#001f3f]",
+    toneColor: "text-slate-700 bg-slate-100",
     img: IMAGES.hospitalHms,
     items: [
       "Arogya Vitra HMS for hospital administration",
@@ -620,12 +823,14 @@ const AboutSection: React.FC = () => (
 
     <div className="mt-10 sm:mt-12 grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-3">
       {LAYER_DETAILS.map((layer) => (
-        <div key={layer.title} className={`rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm ${layer.border} h-full flex flex-col overflow-hidden`}>
-          <div className="h-32 sm:h-36 -mx-6 -mt-6 sm:-mx-8 sm:-mt-8 mb-5 sm:mb-6 overflow-hidden relative border-b border-slate-100">
+        <div key={layer.title} className="rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-sm hover:border-emerald-400 hover:shadow-md transition-all duration-300 h-full flex flex-col overflow-hidden">
+          <div className="h-32 sm:h-36 -mx-6 -mt-6 sm:-mx-8 sm:-mt-8 mb-5 sm:mb-6 overflow-hidden relative">
             <SafeImage src={layer.img} alt={layer.title} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-white via-white/10 to-transparent" />
           </div>
-          <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate-500">{layer.tag}</span>
+          <span className={`inline-block w-fit px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${layer.toneColor}`}>
+            {layer.tag}
+          </span>
           <h4 className="mt-3 text-lg sm:text-xl font-bold text-[#001f3f]">{layer.title}</h4>
           <ul className="mt-4 list-disc pl-5 text-sm leading-relaxed text-slate-700 font-medium space-y-2">
             {layer.items.map((item) => (
@@ -645,7 +850,7 @@ const AboutSection: React.FC = () => (
 
     <div className="grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-2">
       {DIFFERENTIATORS.map((d) => (
-        <div key={d.title} className="flex gap-4 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-2xs hover:border-emerald-300 h-full">
+        <div key={d.title} className="flex gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-sm hover:border-emerald-400 hover:shadow-md transition-all h-full">
           <d.Icon className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 text-emerald-800" />
           <div>
             <h4 className="text-base sm:text-lg font-bold text-[#001f3f]">{d.title}</h4>
@@ -713,19 +918,19 @@ const ContactSection: React.FC<{ showToast: (msg: string) => void }> = ({ showTo
         
         <div className="mt-8 sm:mt-10 space-y-5 sm:space-y-6">
           <div className="flex items-center gap-4 text-sm sm:text-base font-semibold text-[#001f3f]">
-            <div className="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-900 shadow-2xs shrink-0">
+            <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-900 shadow-2xs shrink-0">
               <MailIcon className="h-5 w-5" />
             </div>
             <span className="break-all">support@arogyavitra.in</span>
           </div>
           <div className="flex items-center gap-4 text-sm sm:text-base font-semibold text-[#001f3f]">
-            <div className="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-900 shadow-2xs shrink-0">
+            <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-900 shadow-2xs shrink-0">
               <PinIcon className="h-5 w-5" />
             </div>
             Hyderabad, Telangana, India
           </div>
           <div className="flex items-center gap-4 text-sm sm:text-base font-semibold text-[#001f3f]">
-            <div className="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-900 shadow-2xs shrink-0">
+            <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-900 shadow-2xs shrink-0">
               <PhoneIcon className="h-5 w-5" />
             </div>
             +91 9874588327
@@ -733,7 +938,7 @@ const ContactSection: React.FC<{ showToast: (msg: string) => void }> = ({ showTo
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 md:p-10 shadow-lg">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-8 md:p-10 shadow-lg">
         <form onSubmit={handleSubmit}>
           <Field id="cName" label="Name" placeholder="Your name" value={name} onChange={setName} required />
           <Field id="cEmail" label="Email" type="email" placeholder="you@example.com" value={email} onChange={setEmail} required />
@@ -752,7 +957,7 @@ const ContactSection: React.FC<{ showToast: (msg: string) => void }> = ({ showTo
 // Footer
 // ---------------------------------------------------------------------------
 const Footer: React.FC = () => (
-  <footer className="py-10 sm:py-12 mt-auto bg-slate-50 border-t border-slate-200">
+  <footer className="py-10 sm:py-12 mt-auto bg-slate-50">
     <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 sm:px-6 text-sm font-medium text-slate-600 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2">
         <BrandMark />
@@ -773,9 +978,12 @@ export default function Home() {
 
   const handleNavigate = (path: string) => {
     if (path === "login") {
-      navigate("/login");
+      window.open("/login", "_blank", "noopener,noreferrer");
     } else if (path === "register") {
       navigate("/signup");
+    } else if (path === "hospitals" || path.startsWith("hospitals")) {
+      const url = path.startsWith("/") ? path : `/${path}`;
+      window.open(url, "_blank", "noopener,noreferrer");
     } else if (path === "home" || path === "about" || path === "contact") {
       const element = document.getElementById(path);
       if (element) {
@@ -785,7 +993,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-800 antialiased flex flex-col">
+    <div className="min-h-screen bg-slate-50/40 font-sans text-slate-800 antialiased flex flex-col">
       <Header onNavigate={handleNavigate} />
 
       <main className="flex-grow">
