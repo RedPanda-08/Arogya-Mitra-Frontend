@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { usePatientStore } from '../store/usePatientStore';
 import logo from '../am-logo.jpeg';
 import { apiClient } from '../services/api';
 import { patientApi } from '../services/patientApi';
+import { geocodeAddress } from '../services/geoUtils';
 
 // ---------------------------------------------------------------------------
 // SVG Icons
@@ -139,9 +140,31 @@ const CheckCircleIcon: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 );
 
+const MapPinIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" {...iconProps}>
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+    <circle cx="12" cy="10" r="3" />
+  </svg>
+);
+
+const BuildingIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" {...iconProps}>
+    <path d="M3 21h18M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16M9 9h1m4 0h1m-6 4h1m4 0h1m-6 4h1m4 0h1" />
+  </svg>
+);
+
 // ---------------------------------------------------------------------------
-// Formatters
+// Formatters & Types
 // ---------------------------------------------------------------------------
+interface NearbyHospital {
+  hospitalId: string;
+  name: string;
+  city?: string;
+  totalBeds?: number;
+  distance?: number;
+  distanceKm?: number;
+}
+
 const formatBloodGroup = (bg?: string) => {
   if (!bg) return 'Not Set';
   const map: Record<string, string> = {
@@ -162,7 +185,7 @@ const formatPhoneNumber = (phone?: string) => {
 };
 
 // ---------------------------------------------------------------------------
-// Sidebar nav config
+// Sidebar config
 // ---------------------------------------------------------------------------
 type NavItem = {
   label: string;
@@ -191,7 +214,14 @@ export default function DashboardHome() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(true);
 
-  // 🔄 AUTO-SYNC LOGIC: Fetch fresh database state on dashboard mount via patientApi (Port 8082)
+  // Proximity Hospitals & Location Resolution State
+  const [hospitals, setHospitals] = useState<NearbyHospital[]>([]);
+  const [isLoadingHospitals, setIsLoadingHospitals] = useState<boolean>(false);
+  const [activeLocationLabel, setActiveLocationLabel] = useState<string>('Resolving locality...');
+  const [isUsingLiveGPS, setIsUsingLiveGPS] = useState<boolean>(false);
+  const [savedProfileAddress, setSavedProfileAddress] = useState<string>('');
+
+  // 1. Fetch Fresh Patient Profile
   useEffect(() => {
     const syncPatientData = async () => {
       const storedUserId = localStorage.getItem('userId') || patient?.userId;
@@ -201,10 +231,12 @@ export default function DashboardHome() {
       }
 
       try {
-        // 🔴 FIX 2: Use patientApi.getByUserId to route to Port 8082 instead of Gateway 8080
         const freshPatient = await patientApi.getByUserId(storedUserId);
         if (freshPatient) {
           setPatient(freshPatient);
+          if (freshPatient.address) {
+            setSavedProfileAddress(freshPatient.address);
+          }
         }
       } catch (error) {
         console.error("Failed to sync latest patient state:", error);
@@ -214,6 +246,138 @@ export default function DashboardHome() {
     };
 
     syncPatientData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 2. Resolve Dynamic Coordinates, Update Visible Address & Fetch Facilities
+  const fetchNearbyHospitals = useCallback(async (preferLiveGPS: boolean = false) => {
+    setIsLoadingHospitals(true);
+    try {
+      let lat: number | null = null;
+      let lon: number | null = null;
+      let label = 'Your Location';
+
+      // Route A: Live Device GPS (Reverse Geocode to human-readable address)
+      if (preferLiveGPS && navigator.geolocation) {
+        try {
+          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              timeout: 10000,
+              maximumAge: 30000,
+              enableHighAccuracy: true,
+            });
+          });
+
+          lat = position.coords.latitude;
+          lon = position.coords.longitude;
+
+          // Reverse-geocode to get the actual street/area address of the live position
+          try {
+            const revRes = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+              { headers: { Accept: 'application/json' } }
+            );
+
+            if (revRes.ok) {
+              const revData = await revRes.json();
+              if (revData && revData.display_name) {
+                const addrParts = revData.address;
+                const shortLocality = [
+                  addrParts.suburb || addrParts.neighbourhood || addrParts.residential,
+                  addrParts.city || addrParts.town || addrParts.state_district,
+                  addrParts.state,
+                ].filter(Boolean).join(', ');
+
+                const detectedFull = shortLocality || revData.display_name.split(',').slice(0, 3).join(',');
+                label = detectedFull;
+
+                // Dynamically update the patient's active address to this live location
+                if (patient) {
+                  setPatient({ ...patient, address: detectedFull });
+                }
+              }
+            }
+          } catch (revErr) {
+            console.warn('Reverse geocoding failed, using coordinates label:', revErr);
+            label = `${lat.toFixed(4)}, ${lon.toFixed(4)} (Live GPS)`;
+          }
+
+          setIsUsingLiveGPS(true);
+        } catch (gpsError) {
+          console.warn('GPS prompt dismissed or unavailable, falling back to profile address:', gpsError);
+        }
+      }
+
+      // Route B: Revert to / use registered profile address
+      if (lat === null || lon === null) {
+        const addressToUse = savedProfileAddress || patient?.address;
+
+        if (addressToUse) {
+          // Restore original profile address if we were previously using live GPS
+          if (patient && patient.address !== addressToUse) {
+            setPatient({ ...patient, address: addressToUse });
+          }
+
+          // Check if coordinates are embedded in the address string
+          const coordMatch = addressToUse.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
+          if (coordMatch && coordMatch[1] && coordMatch[2]) {
+            lat = parseFloat(coordMatch[1]);
+            lon = parseFloat(coordMatch[2]);
+            label = addressToUse.split(',')[0] || 'Registered Address';
+          } else {
+            const geocoded = await geocodeAddress(addressToUse);
+            if (geocoded) {
+              lat = geocoded.lat;
+              lon = geocoded.lng;
+              label = addressToUse.split(',')[0] || 'Profile Locality';
+            }
+          }
+        }
+        setIsUsingLiveGPS(false);
+      }
+
+      // Route C: Regional fallback if both GPS and geocoding fail
+      if (lat === null || lon === null) {
+        lat = 17.4429;
+        lon = 78.4725;
+        label = 'Regional Emergency Center';
+        setIsUsingLiveGPS(false);
+      }
+
+      setActiveLocationLabel(label);
+
+      // Query Hospital Microservice with resolved coordinates
+      const token = localStorage.getItem('token');
+      const headers: Record<string, string> = { 'Accept': 'application/json' };
+      if (token && token !== 'session_active') headers['Authorization'] = `Bearer ${token}`;
+
+      const response = await fetch(
+        `http://localhost:8081/api/hospitals/nearby?latitude=${lat}&longitude=${lon}&radius=35`,
+        { headers }
+      );
+
+      if (response.ok) {
+        const data: NearbyHospital[] = await response.json();
+        setHospitals(data.slice(0, 3));
+      } else {
+        setHospitals([]);
+      }
+    } catch (err) {
+      console.warn('Could not load nearby hospitals for dashboard:', err);
+      setHospitals([]);
+    } finally {
+      setIsLoadingHospitals(false);
+    }
+  }, [patient, savedProfileAddress, setPatient]);
+
+  useEffect(() => {
+    if (!patient) return;
+
+    const timeoutId = window.setTimeout(() => {
+      void fetchNearbyHospitals(false);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -324,12 +488,13 @@ export default function DashboardHome() {
 
         <div className="p-3 border-t border-slate-200 shrink-0 space-y-1">
           <button
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors"
+            onClick={() => navigate('/profile')}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer text-left"
           >
             <div className="w-8 h-8 bg-emerald-700 text-white rounded-lg flex items-center justify-center font-bold text-xs shrink-0">
               {firstName[0]}
             </div>
-            <div className="min-w-0 leading-tight text-left">
+            <div className="min-w-0 leading-tight">
               <div className="text-xs font-bold text-slate-900 truncate">{patient?.fullName || 'Patient'}</div>
               <div className="text-[10px] font-semibold text-emerald-600 uppercase tracking-widest">{shortId}</div>
             </div>
@@ -352,20 +517,29 @@ export default function DashboardHome() {
         />
       )}
 
-      {/* Main column */}
+      {/* Main Column */}
       <div className="flex-1 min-w-0 flex flex-col">
 
         {/* Topbar */}
         <header className="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30">
-          <div className="h-16 px-4 sm:px-6 flex items-center">
-            <button
-              onClick={() => setIsMobileNavOpen(true)}
-              className="sm:hidden p-2 -ml-2 mr-2 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors"
-            >
-              <MenuIcon className="w-5 h-5 text-slate-600" />
-            </button>
+          <div className="h-16 px-4 sm:px-6 flex items-center justify-between">
+            <div className="flex items-center">
+              <button
+                onClick={() => setIsMobileNavOpen(true)}
+                className="sm:hidden p-2 -ml-2 mr-2 rounded-lg hover:bg-slate-100 cursor-pointer transition-colors"
+              >
+                <MenuIcon className="w-5 h-5 text-slate-600" />
+              </button>
+              <span className="text-sm font-extrabold text-slate-800 uppercase tracking-widest">Dashboard Overview</span>
+            </div>
 
-            <span className="text-sm font-extrabold text-slate-800 uppercase tracking-widest">Dashboard Overview</span>
+            {/* Resident / Active Locality Badge (Updates dynamically with GPS) */}
+            {patient?.address && (
+              <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 max-w-xs truncate shadow-2xs">
+                <MapPinIcon className={`w-3.5 h-3.5 shrink-0 ${isUsingLiveGPS ? 'text-rose-500 animate-pulse' : 'text-emerald-600'}`} />
+                <span className="truncate font-medium">{patient.address}</span>
+              </div>
+            )}
           </div>
         </header>
 
@@ -416,7 +590,7 @@ export default function DashboardHome() {
             </div>
           </div>
 
-          {/* Compacted Vitals strip */}
+          {/* Vitals Strip */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col gap-1.5">
               <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
@@ -445,7 +619,6 @@ export default function DashboardHome() {
               </div>
             </div>
 
-            {/* DYNAMIC VERIFICATION BADGE CARD WITH SYNC STATE */}
             <div className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col gap-1.5">
               <div className="flex items-center gap-1.5 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
                 <ShieldIcon className="w-3.5 h-3.5 text-emerald-600" /> Status
@@ -464,7 +637,95 @@ export default function DashboardHome() {
             </div>
           </div>
 
-          {/* Service shortcuts */}
+          {/* Dynamic Proximity Hospitals Module */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-emerald-50 rounded-lg text-emerald-700">
+                  <BuildingIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="font-extrabold text-slate-900 text-base sm:text-lg">Nearby Partner Hospitals</h2>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1">
+                      <MapPinIcon className={`w-3 h-3 ${isUsingLiveGPS ? 'text-rose-500' : 'text-emerald-600'}`} />
+                      {activeLocationLabel}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    Showing emergency network hubs nearest to your {isUsingLiveGPS ? 'active GPS coordinates' : 'registered profile address'}.
+                  </p>
+                </div>
+              </div>
+
+              {/* Dynamic Toggle Action */}
+              <div className="flex items-center gap-2 self-start sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => fetchNearbyHospitals(!isUsingLiveGPS)}
+                  disabled={isLoadingHospitals}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 active:bg-slate-200 border border-slate-200 px-3 py-1.5 rounded-lg transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
+                >
+                  <MapPinIcon className={`w-3.5 h-3.5 ${isUsingLiveGPS ? 'text-emerald-600' : 'text-rose-500'}`} />
+                  <span>{isUsingLiveGPS ? 'Use Profile Address' : 'Use Current GPS'}</span>
+                </button>
+
+                <button
+                  onClick={() => navigate('/appointments')}
+                  className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-colors cursor-pointer p-1"
+                >
+                  <span>Directory</span>
+                  <ArrowRightIcon className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {isLoadingHospitals ? (
+              <div className="py-8 flex items-center justify-center gap-2 text-xs text-slate-400">
+                <span className="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+                <span>Locating partner medical hubs for {activeLocationLabel}...</span>
+              </div>
+            ) : hospitals.length === 0 ? (
+              <div className="py-6 text-center text-xs text-slate-500">
+                No nearby network hospitals detected within 35 km of {activeLocationLabel}.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {hospitals.map((h) => {
+                  const dist = h.distance ?? h.distanceKm;
+                  return (
+                    <div
+                      key={h.hospitalId}
+                      className="border border-slate-200/90 rounded-xl p-4 hover:border-emerald-400 hover:shadow-md transition-all bg-slate-50/50 flex flex-col justify-between gap-3 group"
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h3 className="font-bold text-slate-900 text-sm group-hover:text-emerald-700 transition-colors truncate">
+                            {h.name}
+                          </h3>
+                          {dist !== undefined && (
+                            <span className="text-[11px] font-extrabold text-emerald-800 bg-emerald-100/70 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0">
+                              {dist.toFixed(1)} km
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-500 truncate">{h.city || 'Verified Emergency Hub'}</p>
+                      </div>
+
+                      <button
+                        onClick={() => navigate('/appointments')}
+                        className="w-full py-2 bg-white hover:bg-emerald-700 hover:text-white text-emerald-700 border border-slate-200 hover:border-emerald-700 font-bold rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        Book Visit
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Service Shortcuts */}
           <div>
             <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-3 px-1">Quick Actions</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -1,20 +1,20 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './Login'; 
-import Signup from './Signup';
-import Home from './Home';
-import ForgotPassword from './ForgotPassword';
-import ResetPassword from './ResetPassword';
-import PatientProfile from './Patient/PatientProfile';
-import PatientOnboarding from './Patient/PatientOnboarding';
-import DashboardPatient from './Patient/DashboardPatient';
-import { usePatientStore } from './store/usePatientStore';
-import BrowseHospitals from './Hospital/BrowseHospitals';
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Login from "./Login";
+import Signup from "./Signup";
+import Home from "./Home";
+import ForgotPassword from "./ForgotPassword";
+import ResetPassword from "./ResetPassword";
+import PatientProfile from "./Patient/PatientProfile";
+import PatientOnboarding from "./Patient/PatientOnboarding";
+import DashboardPatient from "./Patient/DashboardPatient";
+import { usePatientStore } from "./store/usePatientStore";
+import BrowseHospitals from "./Hospital/BrowseHospitals";
 
 // Protected Route Guard (For Logged-In Users Only)
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const token = localStorage.getItem('token');
-  
+  const token = localStorage.getItem("token");
+
   if (!token) {
     return <Navigate to="/login" replace />;
   }
@@ -24,9 +24,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 // Smart Public-Only Route Guard
 function PublicRoute({ children }: { children: React.ReactNode }) {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   const patient = usePatientStore((state) => state.patient);
-  
+
   if (token) {
     // Directs onboarded patients to the main Dashboard hub, new users to onboarding
     const destination = patient ? "/dashboard" : "/onboarding";
@@ -45,51 +45,59 @@ export default function App() {
         <Route path="/hospitals" element={<BrowseHospitals />} />
 
         {/* Public-Only Auth Routes */}
-        <Route 
-          path="/login" 
+        <Route
+          path="/login"
           element={
             <PublicRoute>
               <Login />
             </PublicRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/signup" 
+
+        <Route
+          path="/signup"
           element={
             <PublicRoute>
               <Signup />
             </PublicRoute>
-          } 
+          }
         />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Protected Patient Routes */}
-        
-        <Route path="/onboarding" element={
-          <PatientOnboarding/>}
-        />
-        <Route 
-          path="/dashboard" 
+
+        <Route
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <DashboardPatient />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/patient-profile" 
+        <Route
+          path="/patient-form"
+          element={
+            
+              <PatientOnboarding />
+                
+          }
+        />
+        <Route
+          path="/patient-profile"
           element={
             <ProtectedRoute>
               <PatientProfile />
             </ProtectedRoute>
-          } 
+          }
         />
-        
+
         {/* Legacy fallback redirect */}
-        <Route path="/profile" element={<Navigate to="/patient-profile" replace />} />
-        
+        <Route
+          path="/profile"
+          element={<Navigate to="/patient-profile" replace />}
+        />
+
         {/* Catch-all Route */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -79,7 +79,9 @@ export default function PatientProfile() {
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDetectingGPS, setIsDetectingGPS] = useState(false);
   const [showUpdateToast, setShowUpdateToast] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string>('Medical Profile Updated');
 
   const [editForm, setEditForm] = useState({
     fullName: '',
@@ -117,7 +119,6 @@ export default function PatientProfile() {
     }
   }, [isEditModalOpen]);
 
-  // ⚡ INSTANT RESPONSE: Opens modal immediately with 0ms UI delay
   const handleOpenEdit = () => {
     if (!patient) return;
 
@@ -129,6 +130,98 @@ export default function PatientProfile() {
       address: patient.address || '',
     });
     setIsEditModalOpen(true);
+  };
+
+  // Live GPS Detector (Reverse Geocoding)
+  const detectLiveAddress = async (): Promise<string | null> => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return null;
+    }
+
+    setIsDetectingGPS(true);
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          timeout: 10000,
+          maximumAge: 30000,
+          enableHighAccuracy: true,
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+        { headers: { Accept: 'application/json' } }
+      );
+
+      if (!res.ok) throw new Error('Reverse geocoding failed');
+      const data = await res.json();
+
+      if (data && data.address) {
+        const addr = data.address;
+        const parts = [
+          addr.house_number || addr.building,
+          addr.road || addr.street,
+          addr.suburb || addr.neighbourhood || addr.residential,
+          addr.city || addr.town || addr.state_district,
+          addr.postcode ? `PIN: ${addr.postcode}` : null,
+          addr.state,
+        ].filter(Boolean);
+
+        return parts.join(', ') || data.display_name;
+      }
+      return `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+    } catch (err: any) {
+      console.warn('GPS detection failed:', err);
+      alert('Unable to acquire GPS position. Please ensure location permissions are enabled.');
+      return null;
+    } finally {
+      setIsDetectingGPS(false);
+    }
+  };
+
+  // Trigger GPS inside Edit Modal
+  const handleGPSInModal = async () => {
+    const liveAddr = await detectLiveAddress();
+    if (liveAddr) {
+      setEditForm((prev) => ({ ...prev, address: liveAddr }));
+      if (addressRef.current) {
+        addressRef.current.style.height = 'auto';
+        addressRef.current.style.height = `${addressRef.current.scrollHeight}px`;
+      }
+    }
+  };
+
+  // Instant 1-Click Update from Overview Profile Card
+  const handleDirectGPSUpdate = async () => {
+    if (!patient) return;
+    const liveAddr = await detectLiveAddress();
+    if (!liveAddr) return;
+
+    setIsUpdating(true);
+    try {
+      const payload: PatientRequestDTO = {
+        userId: patient.userId,
+        fullName: patient.fullName,
+        dateOfBirth: patient.dateOfBirth,
+        gender: patient.gender,
+        bloodGroup: patient.bloodGroup,
+        phoneNumber: patient.phoneNumber,
+        emergencyContact: patient.emergencyContact,
+        address: liveAddr,
+      };
+
+      const updated = await patientApi.updateProfile(patient.patientId, payload);
+      setPatient(updated);
+      setToastMessage('Live Location Synced & Saved');
+      setShowUpdateToast(true);
+    } catch (err: any) {
+      console.error('Failed to auto-save GPS address:', err);
+      alert('Failed to update live address in database.');
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleUpdateSubmit = async (e: React.FormEvent) => {
@@ -151,6 +244,7 @@ export default function PatientProfile() {
       const updatedData = await patientApi.updateProfile(patient.patientId, payloadToSave);
       setPatient(updatedData);
       setIsEditModalOpen(false);
+      setToastMessage('Medical Profile Updated');
       setShowUpdateToast(true);
     } catch (error: any) {
       console.error("Failed to update profile", error);
@@ -210,7 +304,7 @@ export default function PatientProfile() {
               <CheckIcon className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="font-bold text-slate-900 text-sm">Medical Profile Updated</h4>
+              <h4 className="font-bold text-slate-900 text-sm">{toastMessage}</h4>
               <p className="text-xs text-slate-500 font-medium mt-0.5">Your credentials have been securely saved.</p>
             </div>
           </div>
@@ -311,11 +405,22 @@ export default function PatientProfile() {
           </div>
         </div>
 
-        {/* Personal details */}
+        {/* Personal details with Live GPS Action */}
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sm:p-8">
-          <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-            <MapPinIcon className="w-4 h-4 text-slate-400" /> Contact & Demographics
-          </h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <MapPinIcon className="w-4 h-4 text-slate-400" /> Contact & Demographics
+            </h3>
+            <button
+              type="button"
+              onClick={handleDirectGPSUpdate}
+              disabled={isDetectingGPS || isUpdating}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 border border-emerald-300/80 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
+            >
+              <MapPinIcon className={`w-3.5 h-3.5 text-emerald-700 ${isDetectingGPS ? 'animate-bounce' : ''}`} />
+              <span>{isDetectingGPS ? 'Detecting...' : 'Sync Live GPS Address'}</span>
+            </button>
+          </div>
           <div className="divide-y divide-slate-100">
             <InfoRow label="Date of birth" value={formatDate(patient.dateOfBirth)} />
             <InfoRow label="Mobile number" value={formatPhoneNumber(patient.phoneNumber)} />
@@ -458,7 +563,18 @@ export default function PatientProfile() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Registered address</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700">Registered address</label>
+                  <button
+                    type="button"
+                    onClick={handleGPSInModal}
+                    disabled={isDetectingGPS}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 border border-emerald-300/80 px-2.5 py-1 rounded-lg transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    <MapPinIcon className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>{isDetectingGPS ? 'Detecting...' : 'Auto-Detect GPS'}</span>
+                  </button>
+                </div>
                 <textarea
                   ref={addressRef}
                   rows={2}
