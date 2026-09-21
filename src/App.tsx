@@ -78,9 +78,9 @@ export default function App() {
         <Route
           path="/patient-form"
           element={
-            
+            <ProtectedRoute>
               <PatientOnboarding />
-                
+            </ProtectedRoute>
           }
         />
         <Route
